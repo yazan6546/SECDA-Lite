@@ -1,0 +1,50 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Benchmark Model (Debug) FLEX",
+            "type": "shell",
+            "command": "bazel build --config=monolithic //tensorflow/lite/tools/benchmark:benchmark_model_plus_flex --copt=-g -c dbg",
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          },
+
+          {
+            "label": "label_image_plus_sa_sim_del",
+            "type": "shell",
+            "command": "bazel build --jobs 1 //tensorflow/lite/examples/systemc:hello_systemc && bazel build -c opt tensorflow/lite/delegates/utils/sa_sim_delegate:label_image_plus_sa_sim_delegate -c dbg --cxxopt='-DSYSC'",
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          },
+
+          {
+            "label": "label_image_plus_vm_sim_del",
+            "type": "shell",
+            "command": "bazel build --jobs 1 //tensorflow/lite/examples/systemc:hello_systemc && bazel build -c opt tensorflow/lite/delegates/utils/vm_sim_delegate:label_image_plus_vm_sim_delegate -c dbg --cxxopt='-DSYSC'",
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          },
+
+
+          {
+            "label": "label_image_plus_bert_sim_del",
+            "type": "shell",
+            "command": "bazel build --jobs 1 //tensorflow/lite/examples/systemc:hello_systemc && bazel build -c opt tensorflow/lite/delegates/utils/bert_sim_delegate:label_image_plus_bert_sim_delegate -c dbg --cxxopt='-DSYSC'",
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          },
+
+          
+  
+    ]
+}

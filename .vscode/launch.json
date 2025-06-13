@@ -1,0 +1,104 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        
+        {
+            "preLaunchTask": "label_image_plus_sa_sim_del",
+            "name": "label_image_plus_sa_sim_del",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/tensorflow/lite/delegates/utils/sa_sim_delegate/label_image_plus_sa_sim_delegate",
+            "args": [
+                "-mmodels/mobilenetv1.tflite",
+                "-lmodels/inputs/labels2.txt",
+                "-imodels/inputs/grace_hopper.bmp",
+                "-v 1",
+                "-t 1",
+                "--use_sa_sim_delegate=true",
+                
+            ],
+
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
+        {
+            "preLaunchTask": "label_image_plus_vm_sim_del",
+            "name": "label_image_plus_vm_sim_del",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/tensorflow/lite/delegates/utils/vm_sim_delegate/label_image_plus_vm_sim_delegate",
+            "args": [
+                "-mmodels/mobilenetv1.tflite",
+                "-lmodels/inputs/labels2.txt",
+                "-imodels/inputs/grace_hopper.bmp",
+                "-v 1",
+                "-t 1",
+                "--use_vm_sim_delegate=true",
+                
+            ],
+
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
+        {
+            "preLaunchTask": "label_image_plus_bert_sim_del",
+            "name": "label_image_plus_bert_sim_del",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/tensorflow/lite/delegates/utils/bert_sim_delegate/label_image_plus_bert_sim_delegate",
+            "args": [
+                "-mmodels/dense_simple_v8.tflite",
+                "-lmodels/labels.txt",
+                "-imodels/grace_hopper.bmp",
+                "-v 1",
+                "-t 1",
+                "--use_bert_sim_delegate=true",
+                
+            ],
+
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
+
+
+    ]
+
+    
+}
