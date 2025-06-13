@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/lite/tools/benchmark/benchmark_model.h"
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -280,14 +281,17 @@ TfLiteStatus BenchmarkModel::Run() {
   }
 
   listeners_.OnBenchmarkStart(params_);
-  Stat<int64_t> warmup_time_us =
-      Run(params_.Get<int32_t>("warmup_runs"),
-          params_.Get<float>("warmup_min_secs"), params_.Get<float>("max_secs"),
-          WARMUP, &status);
-  if (status != kTfLiteOk) {
-    return status;
-  }
 
+  // Stat<int64_t> warmup_time_us =
+  //     Run(params_.Get<int32_t>("warmup_runs"),
+  //         params_.Get<float>("warmup_min_secs"),
+  //         params_.Get<float>("max_secs"), WARMUP, &status);
+  // if (status != kTfLiteOk) {
+  //   return status;
+  // }
+
+  std::cout << "Press Enter to Go" << std::endl;
+  std::cin.ignore();
   Stat<int64_t> inference_time_us =
       Run(params_.Get<int32_t>("num_runs"), params_.Get<float>("min_secs"),
           params_.Get<float>("max_secs"), REGULAR, &status);
@@ -300,9 +304,18 @@ TfLiteStatus BenchmarkModel::Run() {
     peak_mem_mb = peak_memory_reporter->GetPeakMemUsageInMB();
   }
 
+  Stat<int64_t> warmup_time_us = inference_time_us;
+  float run_time = inference_time_us.sum();
+  std::cout << "===========================" << std::endl;
+  std::cout << "average time: "
+            << (run_time / (params_.Get<int32_t>("num_runs") * 1000)) << " ms"
+            << "  std: " << inference_time_us.std_deviation()  << std::endl;
+  std::cout << "===========================" << std::endl;
+
   listeners_.OnBenchmarkEnd({model_size_mb, startup_latency_us, input_bytes,
                              warmup_time_us, inference_time_us, init_mem_usage,
                              overall_mem_usage, peak_mem_mb});
+                            
   return status;
 }
 

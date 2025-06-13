@@ -1059,6 +1059,17 @@ def _tf_repositories():
             "https://github.com/GrahamDumpleton/wrapt/archive/1.11.1.tar.gz",
         ],
     )
+
+    tf_http_archive(
+        name = "systemc",
+        build_file = "//third_party:systemc.BUILD",
+        sha256 = "5781b9a351e5afedabc37d145e5f7edec08f3fd5de00ffeb8fa1f3086b1f7b3f",
+        urls = [
+            "http://mirror.tensorflow.org/www.accellera.org/images/downloads/standards/systemc/systemc-2.3.3.tar.gz",
+            "https://www.accellera.org/images/downloads/standards/systemc/systemc-2.3.3.tar.gz",
+        ],
+    )
+
     tf_http_archive(
         name = "coremltools",
         sha256 = "0d594a714e8a5fd5bd740ad112ef59155c0482e25fdc8f8efa5758f90abdcf1e",
