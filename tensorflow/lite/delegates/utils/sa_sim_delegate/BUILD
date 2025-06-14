@@ -25,6 +25,7 @@ cc_library(
          "//tensorflow/lite/kernels/internal:types",
 
         "//tensorflow/lite/delegates/utils/sa_sim_delegate/accelerator/driver:driver",
+        "//tensorflow/lite/delegates/utils/secda_tflite/sysc_integrator:systemc_integrator",
     ],
 )
 
