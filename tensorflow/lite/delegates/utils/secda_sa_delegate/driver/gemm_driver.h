@@ -9,7 +9,9 @@
 #include <strstream>
 #include <typeinfo>
 
+#ifdef __ARM_NEON
 #include "arm_neon.h"
+#endif
 
 #include "acc_container.h"
 #include "tensorflow/lite/delegates/utils/secda_tflite/threading_utils/acc_helpers.h"
