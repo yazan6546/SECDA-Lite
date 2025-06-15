@@ -248,12 +248,28 @@ class LayerProfiler:
                 'layers': {}
             }
             
+            # Map delegated layers to TFLite layers
+            delegated_layer_idx = 0
+            
             for i, layer in enumerate(layers):
                 layer_name = f"layer_{i}"
-                layer_metrics_data = layer_metrics.get(layer_name, {})
+                
+                # Check if this layer is delegated (Conv2D layers are typically delegated)
+                is_delegated = 'CONV_2D' in layer.get('op_type', '')
+                
+                if is_delegated and delegated_layer_idx < len(layer_metrics):
+                    # Use SystemC profiling data for delegated layers
+                    delegated_name = f"delegated_layer_{delegated_layer_idx}"
+                    layer_metrics_data = layer_metrics.get(delegated_name, {})
+                    delegated_layer_idx += 1
+                else:
+                    # Use empty metrics for CPU-only layers
+                    layer_metrics_data = {}
                 
                 profile_data['layers'][layer_name] = {
+                    'layer_id': i,  # Add layer_id here
                     'layer_info': layer,
+                    'is_delegated': is_delegated,
                     'performance_metrics': layer_metrics_data,
                     'partitioning_metrics': self.calculate_partitioning_metrics(layer, layer_metrics_data)
                 }
