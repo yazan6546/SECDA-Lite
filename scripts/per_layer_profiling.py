@@ -400,7 +400,7 @@ class LayerProfiler:
             'resnet18v1.tflite'
         ]
         
-        delegates = ['sa_sim', 'vm_sim', 'bert_sim']
+        delegates = ['sa_sim']
         
         all_profiles = {}
         
