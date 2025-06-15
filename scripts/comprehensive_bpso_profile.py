@@ -1078,7 +1078,7 @@ class BPSOWorkflowProfiler:
 
 # Test function to run JSON aggregation
 def main():
-    """Test the comprehensive JSON aggregation workflow"""
+    """Main function to run comprehensive BPSO profiling workflow"""
     parser = argparse.ArgumentParser(description="Comprehensive BPSO Workflow Profiler")
     parser.add_argument("--models", nargs="+", default=["mobilenetv1.tflite", "mobilenetv2.tflite"], 
                        help="Models to profile")
@@ -1086,17 +1086,55 @@ def main():
                        help="Output CSV file name")
     parser.add_argument("--workspace", default="/root/Workspace/tensorflow",
                        help="Workspace directory")
+    parser.add_argument("--test_only", action="store_true",
+                       help="Only test JSON aggregation without running profiling")
     
     args = parser.parse_args()
     
     # Initialize profiler
     profiler = BPSOWorkflowProfiler(workspace_dir=args.workspace)
     
-    # Run comprehensive JSON aggregation
-    results = profiler.aggregate_json_to_csv(args.models, args.output_csv)
+    if args.test_only:
+        print("=== Testing JSON aggregation only ===")
+        # Just run the JSON aggregation on existing files
+        results = profiler.aggregate_json_to_csv(args.models, args.output_csv)
+        print(f"Processed {len(results)} existing JSON files")
+    else:
+        print("=== Running full comprehensive profiling workflow ===")
+        # Run the complete workflow
+        all_results = {}
+        
+        for model in args.models:
+            print(f"\\n>>> Processing model: {model}")
+            model_results = {}
+            
+            # 1. Baseline CPU profiling
+            try:
+                baseline_result = profiler.run_baseline_profiling(model)
+                model_results['baseline'] = baseline_result
+            except Exception as e:
+                print(f"Baseline profiling failed for {model}: {e}")
+            
+            # 2. Default delegation profiling  
+            try:
+                default_result = profiler.run_default_delegation_profiling(model)
+                model_results['default'] = default_result
+            except Exception as e:
+                print(f"Default profiling failed for {model}: {e}")
+            
+            # 3. BPSO optimized profiling
+            try:
+                bpso_result = profiler.run_bpso_delegation_profiling(model)
+                model_results['bpso'] = bpso_result
+            except Exception as e:
+                print(f"BPSO profiling failed for {model}: {e}")
+            
+            all_results[model] = model_results
+        
+        # Generate comprehensive CSV report
+        profiler.generate_comprehensive_csv(all_results, args.output_csv)
     
     print(f"\\n=== Summary ===")
-    print(f"Processed {len(results)} profiling scenarios")
     print(f"Results saved to: {args.output_csv}")
 
 if __name__ == "__main__":
