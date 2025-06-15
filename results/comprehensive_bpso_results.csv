@@ -1,4 +1,4 @@
 model,execution_mode,total_layers,delegated_layers,total_cycles,total_energy_cost,total_execution_cost,total_communication_cost,total_compute_cost,total_memory_cost,compute_efficiency_avg,memory_efficiency_avg,delegated_layer_count,delegated_layer_energy,delegated_layer_execution_cost,cpu_layer_count,cpu_layer_energy,cpu_layer_execution_cost,bpso_sa_layers,bpso_cpu_layers,bpso_total_layers
 mobilenetv1.tflite,baseline,39,0,102150,153225,153225,5105,122580.0,44672,60.0,80.0,0,0,0,39,153225,153225,0,0,0
 mobilenetv1.tflite,default,39,15,10111752,19702876,19702876,45383,19236358.0,134592,72.30966294544338,80.90574104252076,28,19701151,19701151,11,1725,1725,0,0,0
-mobilenetv1.tflite,bpso,39,0,10111752,19702876,19702876,45383,19236358.0,134592,72.30966294544338,80.90574104252076,0,0,0,39,19702876,19702876,24,15,39
+mobilenetv1.tflite,bpso,39,7,5397401,10547371,10547371,21812,10336046.0,95648,66.43883099844066,78.97462610787007,20,10483021,10483021,19,64350,64350,20,19,39

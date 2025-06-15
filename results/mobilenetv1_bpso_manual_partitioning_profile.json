@@ -1,8 +1,8 @@
 {
-  "model_name": "mobilenetv1_bpso",
+  "model_name": "mobilenetv1_bpso_manual",
   "delegate_type": "bpso_optimized",
   "total_layers": 39,
-  "delegated_layers": 7,
+  "delegated_layers": 9,
   "layers": {
     "layer_0": {
       "layer_id": 0,
@@ -12,55 +12,59 @@
         "layer_type": "QUANTIZE",
         "op_type": "QUANTIZE",
         "builtin_code": 114,
-        "is_delegated": true,
+        "is_delegated": false,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": true,
+      "is_delegated": false,
       "performance_metrics": {
-        "read_cycles": 28774,
-        "process_cycles": 1195701,
-        "idle_cycles": 4293,
-        "gemmw_cycles": 1188864,
+        "read_cycles": 30,
+        "process_cycles": 60,
+        "idle_cycles": 10,
+        "gemmw_cycles": 0,
         "gemm_cycles": 0,
-        "wstall_cycles": 543213,
-        "max_input_buffer": 128,
-        "max_weight_buffer": 8192,
-        "total_gmacs": 786432,
-        "total_outputs": 786432,
-        "total_cycles": 1228768,
-        "effective_cycles": 1224475,
-        "compute_efficiency": 97.30893057110862,
-        "memory_efficiency": 5.030533910735733,
-        "gmacs_per_cycle": 0.6577162685320159,
-        "execution_cost": 2422322,
-        "memory_cost": 8320,
-        "communication_cost": 2877
+        "wstall_cycles": 5,
+        "max_input_buffer": 64,
+        "max_weight_buffer": 32,
+        "total_gmacs": 5,
+        "total_outputs": 2,
+        "total_cycles": 100,
+        "effective_cycles": 90,
+        "compute_efficiency": 60.0,
+        "memory_efficiency": 80.0,
+        "gmacs_per_cycle": 0.05,
+        "execution_cost": 150,
+        "memory_cost": 64,
+        "communication_cost": 5
       },
       "partitioning_metrics": {
-        "total_cycles": 1228768,
-        "compute_cycles": 1195701,
-        "memory_access_cycles": 571987,
-        "data_movement_cycles": 28774,
-        "compute_intensity": 2.090433873497125,
-        "operation_weight": 1228768.0,
-        "buffer_requirement": 8320,
-        "energy_cost": 2422322,
+        "total_cycles": 100,
+        "compute_cycles": 60,
+        "memory_access_cycles": 35,
+        "data_movement_cycles": 30,
+        "compute_intensity": 1.7142857142857142,
+        "operation_weight": 100.0,
+        "buffer_requirement": 96,
+        "energy_cost": 150,
         "layer_type": "QUANTIZE",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 2877,
+        "communication_cost": 5,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.6577162685320159,
-        "compute_efficiency": 97.30893057110862,
-        "memory_efficiency": 5.030533910735733,
-        "total_gmacs": 786432,
+        "gmacs_per_cycle": 0.05,
+        "compute_efficiency": 60.0,
+        "memory_efficiency": 80.0,
+        "total_gmacs": 5,
         "execution_cost_breakdown": {
-          "compute_cost": 2391402.0,
-          "memory_cost": 8320,
-          "communication_cost": 2877
+          "compute_cost": 120.0,
+          "memory_cost": 64,
+          "communication_cost": 5
         }
+      },
+      "bpso_decision": {
+        "layer_type": "QUANTIZE",
+        "delegate": false
       }
     },
     "layer_1": {
@@ -120,6 +124,10 @@
           "memory_cost": 32,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "PAD",
+        "delegate": false
       }
     },
     "layer_2": {
@@ -130,55 +138,59 @@
         "layer_type": "CONV_2D",
         "op_type": "CONV_2D",
         "builtin_code": 3,
-        "is_delegated": false,
+        "is_delegated": true,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
-        "read_cycles": 1500,
-        "process_cycles": 3000,
-        "idle_cycles": 500,
-        "gemmw_cycles": 0,
+        "read_cycles": 27933,
+        "process_cycles": 598191,
+        "idle_cycles": 2751,
+        "gemmw_cycles": 594432,
         "gemm_cycles": 0,
-        "wstall_cycles": 250,
-        "max_input_buffer": 2048,
-        "max_weight_buffer": 1024,
-        "total_gmacs": 400,
-        "total_outputs": 200,
-        "total_cycles": 5000,
-        "effective_cycles": 4500,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "gmacs_per_cycle": 0.08,
-        "execution_cost": 7500,
-        "memory_cost": 2048,
-        "communication_cost": 250
+        "wstall_cycles": 271341,
+        "max_input_buffer": 64,
+        "max_weight_buffer": 8192,
+        "total_gmacs": 393216,
+        "total_outputs": 393216,
+        "total_cycles": 628875,
+        "effective_cycles": 626124,
+        "compute_efficiency": 95.12081097197377,
+        "memory_efficiency": 9.333587281220554,
+        "gmacs_per_cycle": 0.6573418857856437,
+        "execution_cost": 1225690,
+        "memory_cost": 8256,
+        "communication_cost": 2793
       },
       "partitioning_metrics": {
-        "total_cycles": 5000,
-        "compute_cycles": 3000,
-        "memory_access_cycles": 1750,
-        "data_movement_cycles": 1500,
-        "compute_intensity": 1.7142857142857142,
-        "operation_weight": 5000.0,
-        "buffer_requirement": 3072,
-        "energy_cost": 7500,
+        "total_cycles": 628875,
+        "compute_cycles": 598191,
+        "memory_access_cycles": 299274,
+        "data_movement_cycles": 27933,
+        "compute_intensity": 1.9988071132139777,
+        "operation_weight": 628875.0,
+        "buffer_requirement": 8256,
+        "energy_cost": 1225690,
         "layer_type": "CONV_2D",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 250,
+        "communication_cost": 2793,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.08,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "total_gmacs": 400,
+        "gmacs_per_cycle": 0.6573418857856437,
+        "compute_efficiency": 95.12081097197377,
+        "memory_efficiency": 9.333587281220554,
+        "total_gmacs": 393216,
         "execution_cost_breakdown": {
-          "compute_cost": 6000.0,
-          "memory_cost": 2048,
-          "communication_cost": 250
+          "compute_cost": 1196382.0,
+          "memory_cost": 8256,
+          "communication_cost": 2793
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_3": {
@@ -186,6 +198,321 @@
       "layer_info": {
         "layer_idx": 3,
         "layer_name": "layer_3",
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "op_type": "DEPTHWISE_CONV_2D",
+        "builtin_code": 4,
+        "is_delegated": true,
+        "input_shape": null,
+        "output_shape": null,
+        "params": 0
+      },
+      "is_delegated": true,
+      "performance_metrics": {
+        "read_cycles": 19469,
+        "process_cycles": 809811,
+        "idle_cycles": 3299,
+        "gemmw_cycles": 804960,
+        "gemm_cycles": 0,
+        "wstall_cycles": 367629,
+        "max_input_buffer": 128,
+        "max_weight_buffer": 8192,
+        "total_gmacs": 532480,
+        "total_outputs": 532480,
+        "total_cycles": 832579,
+        "effective_cycles": 829280,
+        "compute_efficiency": 97.2653646080432,
+        "memory_efficiency": 5.02947573999349,
+        "gmacs_per_cycle": 0.6575361411489842,
+        "execution_cost": 1640740,
+        "memory_cost": 8320,
+        "communication_cost": 1946
+      },
+      "partitioning_metrics": {
+        "total_cycles": 832579,
+        "compute_cycles": 809811,
+        "memory_access_cycles": 387098,
+        "data_movement_cycles": 19469,
+        "compute_intensity": 2.0920051253171033,
+        "operation_weight": 832579.0,
+        "buffer_requirement": 8320,
+        "energy_cost": 1640740,
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "is_compute_intensive": true,
+        "is_memory_intensive": false,
+        "communication_cost": 1946,
+        "parallelization_factor": 0.5,
+        "gmacs_per_cycle": 0.6575361411489842,
+        "compute_efficiency": 97.2653646080432,
+        "memory_efficiency": 5.02947573999349,
+        "total_gmacs": 532480,
+        "execution_cost_breakdown": {
+          "compute_cost": 1619622.0,
+          "memory_cost": 8320,
+          "communication_cost": 1946
+        }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
+      }
+    },
+    "layer_4": {
+      "layer_id": 4,
+      "layer_info": {
+        "layer_idx": 4,
+        "layer_name": "layer_4",
+        "layer_type": "CONV_2D",
+        "op_type": "CONV_2D",
+        "builtin_code": 3,
+        "is_delegated": true,
+        "input_shape": null,
+        "output_shape": null,
+        "params": 0
+      },
+      "is_delegated": true,
+      "performance_metrics": {
+        "read_cycles": 18873,
+        "process_cycles": 816881,
+        "idle_cycles": 3089,
+        "gemmw_cycles": 724464,
+        "gemm_cycles": 0,
+        "wstall_cycles": 192222,
+        "max_input_buffer": 2048,
+        "max_weight_buffer": 8192,
+        "total_gmacs": 479232,
+        "total_outputs": 479232,
+        "total_cycles": 838843,
+        "effective_cycles": 835754,
+        "compute_efficiency": 97.38187002812207,
+        "memory_efficiency": 8.940524408441696,
+        "gmacs_per_cycle": 0.5866607253688114,
+        "execution_cost": 1654179,
+        "memory_cost": 10240,
+        "communication_cost": 1887
+      },
+      "partitioning_metrics": {
+        "total_cycles": 838843,
+        "compute_cycles": 816881,
+        "memory_access_cycles": 211095,
+        "data_movement_cycles": 18873,
+        "compute_intensity": 3.8697316374144344,
+        "operation_weight": 838843.0,
+        "buffer_requirement": 10240,
+        "energy_cost": 1654179,
+        "layer_type": "CONV_2D",
+        "is_compute_intensive": true,
+        "is_memory_intensive": false,
+        "communication_cost": 1887,
+        "parallelization_factor": 0.5,
+        "gmacs_per_cycle": 0.5866607253688114,
+        "compute_efficiency": 97.38187002812207,
+        "memory_efficiency": 8.940524408441696,
+        "total_gmacs": 479232,
+        "execution_cost_breakdown": {
+          "compute_cost": 1633762.0,
+          "memory_cost": 10240,
+          "communication_cost": 1887
+        }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
+      }
+    },
+    "layer_5": {
+      "layer_id": 5,
+      "layer_info": {
+        "layer_idx": 5,
+        "layer_name": "layer_5",
+        "layer_type": "PAD",
+        "op_type": "PAD",
+        "builtin_code": 34,
+        "is_delegated": true,
+        "input_shape": null,
+        "output_shape": null,
+        "params": 0
+      },
+      "is_delegated": true,
+      "performance_metrics": {
+        "read_cycles": 31850,
+        "process_cycles": 866970,
+        "idle_cycles": 2106,
+        "gemmw_cycles": 343656,
+        "gemm_cycles": 0,
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 8192,
+        "total_gmacs": 227328,
+        "total_outputs": 227328,
+        "total_cycles": 900926,
+        "effective_cycles": 898820,
+        "compute_efficiency": 96.23098900464633,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.26220976504377314,
+        "execution_cost": 1766843,
+        "memory_cost": 12288,
+        "communication_cost": 3185
+      },
+      "partitioning_metrics": {
+        "total_cycles": 900926,
+        "compute_cycles": 866970,
+        "memory_access_cycles": 31850,
+        "data_movement_cycles": 31850,
+        "compute_intensity": 27.220408163265308,
+        "operation_weight": 900926.0,
+        "buffer_requirement": 12288,
+        "energy_cost": 1766843,
+        "layer_type": "PAD",
+        "is_compute_intensive": true,
+        "is_memory_intensive": false,
+        "communication_cost": 3185,
+        "parallelization_factor": 0.5,
+        "gmacs_per_cycle": 0.26220976504377314,
+        "compute_efficiency": 96.23098900464633,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 227328,
+        "execution_cost_breakdown": {
+          "compute_cost": 1733940.0,
+          "memory_cost": 12288,
+          "communication_cost": 3185
+        }
+      },
+      "bpso_decision": {
+        "layer_type": "PAD",
+        "delegate": true
+      }
+    },
+    "layer_6": {
+      "layer_id": 6,
+      "layer_info": {
+        "layer_idx": 6,
+        "layer_name": "layer_6",
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "op_type": "DEPTHWISE_CONV_2D",
+        "builtin_code": 4,
+        "is_delegated": true,
+        "input_shape": null,
+        "output_shape": null,
+        "params": 0
+      },
+      "is_delegated": true,
+      "performance_metrics": {
+        "read_cycles": 23105,
+        "process_cycles": 689267,
+        "idle_cycles": 2035,
+        "gemmw_cycles": 160992,
+        "gemm_cycles": 0,
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 6272,
+        "total_gmacs": 106496,
+        "total_outputs": 106496,
+        "total_cycles": 714407,
+        "effective_cycles": 712372,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "execution_cost": 1402656,
+        "memory_cost": 10368,
+        "communication_cost": 2310
+      },
+      "partitioning_metrics": {
+        "total_cycles": 714407,
+        "compute_cycles": 689267,
+        "memory_access_cycles": 23105,
+        "data_movement_cycles": 23105,
+        "compute_intensity": 29.831941138281756,
+        "operation_weight": 714407.0,
+        "buffer_requirement": 10368,
+        "energy_cost": 1402656,
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "is_compute_intensive": true,
+        "is_memory_intensive": false,
+        "communication_cost": 2310,
+        "parallelization_factor": 0.5,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 106496,
+        "execution_cost_breakdown": {
+          "compute_cost": 1378534.0,
+          "memory_cost": 10368,
+          "communication_cost": 2310
+        }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
+      }
+    },
+    "layer_7": {
+      "layer_id": 7,
+      "layer_info": {
+        "layer_idx": 7,
+        "layer_name": "layer_7",
+        "layer_type": "CONV_2D",
+        "op_type": "CONV_2D",
+        "builtin_code": 3,
+        "is_delegated": true,
+        "input_shape": null,
+        "output_shape": null,
+        "params": 0
+      },
+      "is_delegated": true,
+      "performance_metrics": {
+        "read_cycles": 23105,
+        "process_cycles": 689267,
+        "idle_cycles": 2035,
+        "gemmw_cycles": 160992,
+        "gemm_cycles": 0,
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 6272,
+        "total_gmacs": 106496,
+        "total_outputs": 106496,
+        "total_cycles": 714407,
+        "effective_cycles": 712372,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "execution_cost": 1402656,
+        "memory_cost": 10368,
+        "communication_cost": 2310
+      },
+      "partitioning_metrics": {
+        "total_cycles": 714407,
+        "compute_cycles": 689267,
+        "memory_access_cycles": 23105,
+        "data_movement_cycles": 23105,
+        "compute_intensity": 29.831941138281756,
+        "operation_weight": 714407.0,
+        "buffer_requirement": 10368,
+        "energy_cost": 1402656,
+        "layer_type": "CONV_2D",
+        "is_compute_intensive": true,
+        "is_memory_intensive": false,
+        "communication_cost": 2310,
+        "parallelization_factor": 0.5,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 106496,
+        "execution_cost_breakdown": {
+          "compute_cost": 1378534.0,
+          "memory_cost": 10368,
+          "communication_cost": 2310
+        }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
+      }
+    },
+    "layer_8": {
+      "layer_id": 8,
+      "layer_info": {
+        "layer_idx": 8,
+        "layer_name": "layer_8",
         "layer_type": "DEPTHWISE_CONV_2D",
         "op_type": "DEPTHWISE_CONV_2D",
         "builtin_code": 4,
@@ -238,301 +565,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
-      }
-    },
-    "layer_4": {
-      "layer_id": 4,
-      "layer_info": {
-        "layer_idx": 4,
-        "layer_name": "layer_4",
-        "layer_type": "CONV_2D",
-        "op_type": "CONV_2D",
-        "builtin_code": 3,
-        "is_delegated": true,
-        "input_shape": null,
-        "output_shape": null,
-        "params": 0
       },
-      "is_delegated": true,
-      "performance_metrics": {
-        "read_cycles": 24314,
-        "process_cycles": 635731,
-        "idle_cycles": 2851,
-        "gemmw_cycles": 631584,
-        "gemm_cycles": 0,
-        "wstall_cycles": 137997,
-        "max_input_buffer": 1024,
-        "max_weight_buffer": 8192,
-        "total_gmacs": 417792,
-        "total_outputs": 417792,
-        "total_cycles": 662896,
-        "effective_cycles": 660045,
-        "compute_efficiency": 95.90207211991022,
-        "memory_efficiency": 14.979884296196808,
-        "gmacs_per_cycle": 0.6571836201160554,
-        "execution_cost": 1297201,
-        "memory_cost": 9216,
-        "communication_cost": 2431
-      },
-      "partitioning_metrics": {
-        "total_cycles": 662896,
-        "compute_cycles": 635731,
-        "memory_access_cycles": 162311,
-        "data_movement_cycles": 24314,
-        "compute_intensity": 3.9167462464035094,
-        "operation_weight": 662896.0,
-        "buffer_requirement": 9216,
-        "energy_cost": 1297201,
-        "layer_type": "CONV_2D",
-        "is_compute_intensive": true,
-        "is_memory_intensive": false,
-        "communication_cost": 2431,
-        "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.6571836201160554,
-        "compute_efficiency": 95.90207211991022,
-        "memory_efficiency": 14.979884296196808,
-        "total_gmacs": 417792,
-        "execution_cost_breakdown": {
-          "compute_cost": 1271462.0,
-          "memory_cost": 9216,
-          "communication_cost": 2431
-        }
-      }
-    },
-    "layer_5": {
-      "layer_id": 5,
-      "layer_info": {
-        "layer_idx": 5,
-        "layer_name": "layer_5",
-        "layer_type": "PAD",
-        "op_type": "PAD",
-        "builtin_code": 34,
-        "is_delegated": true,
-        "input_shape": null,
-        "output_shape": null,
-        "params": 0
-      },
-      "is_delegated": true,
-      "performance_metrics": {
-        "read_cycles": 20806,
-        "process_cycles": 787188,
-        "idle_cycles": 3188,
-        "gemmw_cycles": 606816,
-        "gemm_cycles": 0,
-        "wstall_cycles": 0,
-        "max_input_buffer": 1024,
-        "max_weight_buffer": 8192,
-        "total_gmacs": 401408,
-        "total_outputs": 401408,
-        "total_cycles": 811182,
-        "effective_cycles": 807994,
-        "compute_efficiency": 97.0420941293076,
-        "memory_efficiency": 100.0,
-        "gmacs_per_cycle": 0.5099264724563891,
-        "execution_cost": 1596776,
-        "memory_cost": 9216,
-        "communication_cost": 2080
-      },
-      "partitioning_metrics": {
-        "total_cycles": 811182,
-        "compute_cycles": 787188,
-        "memory_access_cycles": 20806,
-        "data_movement_cycles": 20806,
-        "compute_intensity": 37.83466307795828,
-        "operation_weight": 811182.0,
-        "buffer_requirement": 9216,
-        "energy_cost": 1596776,
-        "layer_type": "PAD",
-        "is_compute_intensive": true,
-        "is_memory_intensive": false,
-        "communication_cost": 2080,
-        "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.5099264724563891,
-        "compute_efficiency": 97.0420941293076,
-        "memory_efficiency": 100.0,
-        "total_gmacs": 401408,
-        "execution_cost_breakdown": {
-          "compute_cost": 1574376.0,
-          "memory_cost": 9216,
-          "communication_cost": 2080
-        }
-      }
-    },
-    "layer_6": {
-      "layer_id": 6,
-      "layer_info": {
-        "layer_idx": 6,
-        "layer_name": "layer_6",
+      "bpso_decision": {
         "layer_type": "DEPTHWISE_CONV_2D",
-        "op_type": "DEPTHWISE_CONV_2D",
-        "builtin_code": 4,
-        "is_delegated": true,
-        "input_shape": null,
-        "output_shape": null,
-        "params": 0
-      },
-      "is_delegated": true,
-      "performance_metrics": {
-        "read_cycles": 36044,
-        "process_cycles": 866970,
-        "idle_cycles": 2106,
-        "gemmw_cycles": 343656,
-        "gemm_cycles": 0,
-        "wstall_cycles": 0,
-        "max_input_buffer": 4096,
-        "max_weight_buffer": 8192,
-        "total_gmacs": 227328,
-        "total_outputs": 227328,
-        "total_cycles": 905120,
-        "effective_cycles": 903014,
-        "compute_efficiency": 95.78508926993106,
-        "memory_efficiency": 100.0,
-        "gmacs_per_cycle": 0.26220976504377314,
-        "execution_cost": 1771037,
-        "memory_cost": 12288,
-        "communication_cost": 3604
-      },
-      "partitioning_metrics": {
-        "total_cycles": 905120,
-        "compute_cycles": 866970,
-        "memory_access_cycles": 36044,
-        "data_movement_cycles": 36044,
-        "compute_intensity": 24.053101764510043,
-        "operation_weight": 905120.0,
-        "buffer_requirement": 12288,
-        "energy_cost": 1771037,
-        "layer_type": "DEPTHWISE_CONV_2D",
-        "is_compute_intensive": true,
-        "is_memory_intensive": false,
-        "communication_cost": 3604,
-        "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.26220976504377314,
-        "compute_efficiency": 95.78508926993106,
-        "memory_efficiency": 100.0,
-        "total_gmacs": 227328,
-        "execution_cost_breakdown": {
-          "compute_cost": 1733940.0,
-          "memory_cost": 12288,
-          "communication_cost": 3604
-        }
-      }
-    },
-    "layer_7": {
-      "layer_id": 7,
-      "layer_info": {
-        "layer_idx": 7,
-        "layer_name": "layer_7",
-        "layer_type": "CONV_2D",
-        "op_type": "CONV_2D",
-        "builtin_code": 3,
-        "is_delegated": true,
-        "input_shape": null,
-        "output_shape": null,
-        "params": 0
-      },
-      "is_delegated": true,
-      "performance_metrics": {
-        "read_cycles": 23106,
-        "process_cycles": 861584,
-        "idle_cycles": 2544,
-        "gemmw_cycles": 201240,
-        "gemm_cycles": 0,
-        "wstall_cycles": 0,
-        "max_input_buffer": 4096,
-        "max_weight_buffer": 6272,
-        "total_gmacs": 133120,
-        "total_outputs": 133120,
-        "total_cycles": 887234,
-        "effective_cycles": 884690,
-        "compute_efficiency": 97.10899266709797,
-        "memory_efficiency": 100.0,
-        "gmacs_per_cycle": 0.15450611896228342,
-        "execution_cost": 1747546,
-        "memory_cost": 10368,
-        "communication_cost": 2310
-      },
-      "partitioning_metrics": {
-        "total_cycles": 887234,
-        "compute_cycles": 861584,
-        "memory_access_cycles": 23106,
-        "data_movement_cycles": 23106,
-        "compute_intensity": 37.28832337920886,
-        "operation_weight": 887234.0,
-        "buffer_requirement": 10368,
-        "energy_cost": 1747546,
-        "layer_type": "CONV_2D",
-        "is_compute_intensive": true,
-        "is_memory_intensive": false,
-        "communication_cost": 2310,
-        "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.15450611896228342,
-        "compute_efficiency": 97.10899266709797,
-        "memory_efficiency": 100.0,
-        "total_gmacs": 133120,
-        "execution_cost_breakdown": {
-          "compute_cost": 1723168.0,
-          "memory_cost": 10368,
-          "communication_cost": 2310
-        }
-      }
-    },
-    "layer_8": {
-      "layer_id": 8,
-      "layer_info": {
-        "layer_idx": 8,
-        "layer_name": "layer_8",
-        "layer_type": "DEPTHWISE_CONV_2D",
-        "op_type": "DEPTHWISE_CONV_2D",
-        "builtin_code": 4,
-        "is_delegated": true,
-        "input_shape": null,
-        "output_shape": null,
-        "params": 0
-      },
-      "is_delegated": true,
-      "performance_metrics": {
-        "read_cycles": 22655,
-        "process_cycles": 451237,
-        "idle_cycles": 1893,
-        "gemmw_cycles": 105264,
-        "gemm_cycles": 0,
-        "wstall_cycles": 0,
-        "max_input_buffer": 4096,
-        "max_weight_buffer": 1664,
-        "total_gmacs": 69632,
-        "total_outputs": 69632,
-        "total_cycles": 475785,
-        "effective_cycles": 473892,
-        "compute_efficiency": 94.84052670849228,
-        "memory_efficiency": 100.0,
-        "gmacs_per_cycle": 0.15431358687341684,
-        "execution_cost": 926075,
-        "memory_cost": 5760,
-        "communication_cost": 2265
-      },
-      "partitioning_metrics": {
-        "total_cycles": 475785,
-        "compute_cycles": 451237,
-        "memory_access_cycles": 22655,
-        "data_movement_cycles": 22655,
-        "compute_intensity": 19.91776649746193,
-        "operation_weight": 475785.0,
-        "buffer_requirement": 5760,
-        "energy_cost": 926075,
-        "layer_type": "DEPTHWISE_CONV_2D",
-        "is_compute_intensive": true,
-        "is_memory_intensive": false,
-        "communication_cost": 2265,
-        "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.15431358687341684,
-        "compute_efficiency": 94.84052670849228,
-        "memory_efficiency": 100.0,
-        "total_gmacs": 69632,
-        "execution_cost_breakdown": {
-          "compute_cost": 902474.0,
-          "memory_cost": 5760,
-          "communication_cost": 2265
-        }
+        "delegate": false
       }
     },
     "layer_9": {
@@ -543,55 +579,59 @@
         "layer_type": "CONV_2D",
         "op_type": "CONV_2D",
         "builtin_code": 3,
-        "is_delegated": true,
+        "is_delegated": false,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": true,
+      "is_delegated": false,
       "performance_metrics": {
-        "read_cycles": 20976,
-        "process_cycles": 319812,
-        "idle_cycles": 2628,
-        "gemmw_cycles": 74304,
+        "read_cycles": 1500,
+        "process_cycles": 3000,
+        "idle_cycles": 500,
+        "gemmw_cycles": 0,
         "gemm_cycles": 0,
-        "wstall_cycles": 0,
-        "max_input_buffer": 4096,
-        "max_weight_buffer": 0,
-        "total_gmacs": 49152,
-        "total_outputs": 49152,
-        "total_cycles": 343416,
-        "effective_cycles": 340788,
-        "compute_efficiency": 93.12670347333845,
-        "memory_efficiency": 100.0,
-        "gmacs_per_cycle": 0.15369029304716522,
-        "execution_cost": 661914,
-        "memory_cost": 4096,
-        "communication_cost": 2097
+        "wstall_cycles": 250,
+        "max_input_buffer": 2048,
+        "max_weight_buffer": 1024,
+        "total_gmacs": 400,
+        "total_outputs": 200,
+        "total_cycles": 5000,
+        "effective_cycles": 4500,
+        "compute_efficiency": 60.0,
+        "memory_efficiency": 80.0,
+        "gmacs_per_cycle": 0.08,
+        "execution_cost": 7500,
+        "memory_cost": 2048,
+        "communication_cost": 250
       },
       "partitioning_metrics": {
-        "total_cycles": 343416,
-        "compute_cycles": 319812,
-        "memory_access_cycles": 20976,
-        "data_movement_cycles": 20976,
-        "compute_intensity": 15.246567505720824,
-        "operation_weight": 343416.0,
-        "buffer_requirement": 4096,
-        "energy_cost": 661914,
+        "total_cycles": 5000,
+        "compute_cycles": 3000,
+        "memory_access_cycles": 1750,
+        "data_movement_cycles": 1500,
+        "compute_intensity": 1.7142857142857142,
+        "operation_weight": 5000.0,
+        "buffer_requirement": 3072,
+        "energy_cost": 7500,
         "layer_type": "CONV_2D",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 2097,
+        "communication_cost": 250,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.15369029304716522,
-        "compute_efficiency": 93.12670347333845,
-        "memory_efficiency": 100.0,
-        "total_gmacs": 49152,
+        "gmacs_per_cycle": 0.08,
+        "compute_efficiency": 60.0,
+        "memory_efficiency": 80.0,
+        "total_gmacs": 400,
         "execution_cost_breakdown": {
-          "compute_cost": 639624.0,
-          "memory_cost": 4096,
-          "communication_cost": 2097
+          "compute_cost": 6000.0,
+          "memory_cost": 2048,
+          "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": false
       }
     },
     "layer_10": {
@@ -607,7 +647,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": true,
+      "is_delegated": false,
       "performance_metrics": {
         "read_cycles": 15,
         "process_cycles": 30,
@@ -651,6 +691,10 @@
           "memory_cost": 32,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "PAD",
+        "delegate": false
       }
     },
     "layer_11": {
@@ -661,55 +705,59 @@
         "layer_type": "DEPTHWISE_CONV_2D",
         "op_type": "DEPTHWISE_CONV_2D",
         "builtin_code": 4,
-        "is_delegated": false,
+        "is_delegated": true,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
       "is_delegated": true,
       "performance_metrics": {
-        "read_cycles": 600,
-        "process_cycles": 1200,
-        "idle_cycles": 200,
-        "gemmw_cycles": 0,
+        "read_cycles": 23105,
+        "process_cycles": 689267,
+        "idle_cycles": 2035,
+        "gemmw_cycles": 160992,
         "gemm_cycles": 0,
-        "wstall_cycles": 100,
-        "max_input_buffer": 1024,
-        "max_weight_buffer": 512,
-        "total_gmacs": 150,
-        "total_outputs": 75,
-        "total_cycles": 2000,
-        "effective_cycles": 1800,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "gmacs_per_cycle": 0.075,
-        "execution_cost": 3000,
-        "memory_cost": 1024,
-        "communication_cost": 100
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 6272,
+        "total_gmacs": 106496,
+        "total_outputs": 106496,
+        "total_cycles": 714407,
+        "effective_cycles": 712372,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "execution_cost": 1402656,
+        "memory_cost": 10368,
+        "communication_cost": 2310
       },
       "partitioning_metrics": {
-        "total_cycles": 2000,
-        "compute_cycles": 1200,
-        "memory_access_cycles": 700,
-        "data_movement_cycles": 600,
-        "compute_intensity": 1.7142857142857142,
-        "operation_weight": 2000.0,
-        "buffer_requirement": 1536,
-        "energy_cost": 3000,
+        "total_cycles": 714407,
+        "compute_cycles": 689267,
+        "memory_access_cycles": 23105,
+        "data_movement_cycles": 23105,
+        "compute_intensity": 29.831941138281756,
+        "operation_weight": 714407.0,
+        "buffer_requirement": 10368,
+        "energy_cost": 1402656,
         "layer_type": "DEPTHWISE_CONV_2D",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 100,
+        "communication_cost": 2310,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.075,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "total_gmacs": 150,
+        "gmacs_per_cycle": 0.1545061637942916,
+        "compute_efficiency": 96.48099752661999,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 106496,
         "execution_cost_breakdown": {
-          "compute_cost": 2400.0,
-          "memory_cost": 1024,
-          "communication_cost": 100
+          "compute_cost": 1378534.0,
+          "memory_cost": 10368,
+          "communication_cost": 2310
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_12": {
@@ -720,55 +768,59 @@
         "layer_type": "CONV_2D",
         "op_type": "CONV_2D",
         "builtin_code": 3,
-        "is_delegated": false,
+        "is_delegated": true,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
       "is_delegated": true,
       "performance_metrics": {
-        "read_cycles": 1500,
-        "process_cycles": 3000,
-        "idle_cycles": 500,
-        "gemmw_cycles": 0,
+        "read_cycles": 18461,
+        "process_cycles": 570252,
+        "idle_cycles": 1964,
+        "gemmw_cycles": 133128,
         "gemm_cycles": 0,
-        "wstall_cycles": 250,
-        "max_input_buffer": 2048,
-        "max_weight_buffer": 1024,
-        "total_gmacs": 400,
-        "total_outputs": 200,
-        "total_cycles": 5000,
-        "effective_cycles": 4500,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "gmacs_per_cycle": 0.08,
-        "execution_cost": 7500,
-        "memory_cost": 2048,
-        "communication_cost": 250
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 1664,
+        "total_gmacs": 88064,
+        "total_outputs": 88064,
+        "total_cycles": 590677,
+        "effective_cycles": 588713,
+        "compute_efficiency": 96.54210338306723,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.1544299713109292,
+        "execution_cost": 1159947,
+        "memory_cost": 5760,
+        "communication_cost": 1846
       },
       "partitioning_metrics": {
-        "total_cycles": 5000,
-        "compute_cycles": 3000,
-        "memory_access_cycles": 1750,
-        "data_movement_cycles": 1500,
-        "compute_intensity": 1.7142857142857142,
-        "operation_weight": 5000.0,
-        "buffer_requirement": 3072,
-        "energy_cost": 7500,
+        "total_cycles": 590677,
+        "compute_cycles": 570252,
+        "memory_access_cycles": 18461,
+        "data_movement_cycles": 18461,
+        "compute_intensity": 30.889550945235904,
+        "operation_weight": 590677.0,
+        "buffer_requirement": 5760,
+        "energy_cost": 1159947,
         "layer_type": "CONV_2D",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 250,
+        "communication_cost": 1846,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.08,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "total_gmacs": 400,
+        "gmacs_per_cycle": 0.1544299713109292,
+        "compute_efficiency": 96.54210338306723,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 88064,
         "execution_cost_breakdown": {
-          "compute_cost": 6000.0,
-          "memory_cost": 2048,
-          "communication_cost": 250
+          "compute_cost": 1140504.0,
+          "memory_cost": 5760,
+          "communication_cost": 1846
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_13": {
@@ -779,55 +831,59 @@
         "layer_type": "DEPTHWISE_CONV_2D",
         "op_type": "DEPTHWISE_CONV_2D",
         "builtin_code": 4,
-        "is_delegated": false,
+        "is_delegated": true,
         "input_shape": null,
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
-        "read_cycles": 600,
-        "process_cycles": 1200,
-        "idle_cycles": 200,
-        "gemmw_cycles": 0,
+        "read_cycles": 29365,
+        "process_cycles": 373114,
+        "idle_cycles": 3066,
+        "gemmw_cycles": 86688,
         "gemm_cycles": 0,
-        "wstall_cycles": 100,
-        "max_input_buffer": 1024,
-        "max_weight_buffer": 512,
-        "total_gmacs": 150,
-        "total_outputs": 75,
-        "total_cycles": 2000,
-        "effective_cycles": 1800,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "gmacs_per_cycle": 0.075,
-        "execution_cost": 3000,
-        "memory_cost": 1024,
-        "communication_cost": 100
+        "wstall_cycles": 0,
+        "max_input_buffer": 4096,
+        "max_weight_buffer": 0,
+        "total_gmacs": 57344,
+        "total_outputs": 57344,
+        "total_cycles": 405545,
+        "effective_cycles": 402479,
+        "compute_efficiency": 92.00310693018038,
+        "memory_efficiency": 100.0,
+        "gmacs_per_cycle": 0.15369029304716522,
+        "execution_cost": 777126,
+        "memory_cost": 4096,
+        "communication_cost": 2936
       },
       "partitioning_metrics": {
-        "total_cycles": 2000,
-        "compute_cycles": 1200,
-        "memory_access_cycles": 700,
-        "data_movement_cycles": 600,
-        "compute_intensity": 1.7142857142857142,
-        "operation_weight": 2000.0,
-        "buffer_requirement": 1536,
-        "energy_cost": 3000,
+        "total_cycles": 405545,
+        "compute_cycles": 373114,
+        "memory_access_cycles": 29365,
+        "data_movement_cycles": 29365,
+        "compute_intensity": 12.706078665077474,
+        "operation_weight": 405545.0,
+        "buffer_requirement": 4096,
+        "energy_cost": 777126,
         "layer_type": "DEPTHWISE_CONV_2D",
         "is_compute_intensive": true,
         "is_memory_intensive": false,
-        "communication_cost": 100,
+        "communication_cost": 2936,
         "parallelization_factor": 0.5,
-        "gmacs_per_cycle": 0.075,
-        "compute_efficiency": 60.0,
-        "memory_efficiency": 80.0,
-        "total_gmacs": 150,
+        "gmacs_per_cycle": 0.15369029304716522,
+        "compute_efficiency": 92.00310693018038,
+        "memory_efficiency": 100.0,
+        "total_gmacs": 57344,
         "execution_cost_breakdown": {
-          "compute_cost": 2400.0,
-          "memory_cost": 1024,
-          "communication_cost": 100
+          "compute_cost": 746228.0,
+          "memory_cost": 4096,
+          "communication_cost": 2936
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_14": {
@@ -887,6 +943,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_15": {
@@ -946,6 +1006,10 @@
           "memory_cost": 32,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "PAD",
+        "delegate": true
       }
     },
     "layer_16": {
@@ -1005,6 +1069,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_17": {
@@ -1020,7 +1088,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": true,
+      "is_delegated": false,
       "performance_metrics": {
         "read_cycles": 1500,
         "process_cycles": 3000,
@@ -1064,6 +1132,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": false
       }
     },
     "layer_18": {
@@ -1123,6 +1195,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": false
       }
     },
     "layer_19": {
@@ -1182,6 +1258,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_20": {
@@ -1197,7 +1277,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": true,
+      "is_delegated": false,
       "performance_metrics": {
         "read_cycles": 600,
         "process_cycles": 1200,
@@ -1241,6 +1321,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": false
       }
     },
     "layer_21": {
@@ -1300,6 +1384,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": false
       }
     },
     "layer_22": {
@@ -1359,6 +1447,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_23": {
@@ -1418,6 +1510,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_24": {
@@ -1433,7 +1529,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 600,
         "process_cycles": 1200,
@@ -1477,6 +1573,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_25": {
@@ -1492,7 +1592,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 1500,
         "process_cycles": 3000,
@@ -1536,6 +1636,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_26": {
@@ -1551,7 +1655,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 600,
         "process_cycles": 1200,
@@ -1595,6 +1699,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_27": {
@@ -1610,7 +1718,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 1500,
         "process_cycles": 3000,
@@ -1654,6 +1762,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_28": {
@@ -1669,7 +1781,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 15,
         "process_cycles": 30,
@@ -1713,6 +1825,10 @@
           "memory_cost": 32,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "PAD",
+        "delegate": true
       }
     },
     "layer_29": {
@@ -1772,6 +1888,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": false
       }
     },
     "layer_30": {
@@ -1831,6 +1951,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_31": {
@@ -1890,6 +2014,10 @@
           "memory_cost": 1024,
           "communication_cost": 100
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEPTHWISE_CONV_2D",
+        "delegate": true
       }
     },
     "layer_32": {
@@ -1905,7 +2033,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 1500,
         "process_cycles": 3000,
@@ -1949,6 +2077,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_33": {
@@ -2008,6 +2140,10 @@
           "memory_cost": 64,
           "communication_cost": 5
         }
+      },
+      "bpso_decision": {
+        "layer_type": "MEAN",
+        "delegate": false
       }
     },
     "layer_34": {
@@ -2067,6 +2203,10 @@
           "memory_cost": 16,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "RESHAPE",
+        "delegate": false
       }
     },
     "layer_35": {
@@ -2082,7 +2222,7 @@
         "output_shape": null,
         "params": 0
       },
-      "is_delegated": false,
+      "is_delegated": true,
       "performance_metrics": {
         "read_cycles": 1500,
         "process_cycles": 3000,
@@ -2126,6 +2266,10 @@
           "memory_cost": 2048,
           "communication_cost": 250
         }
+      },
+      "bpso_decision": {
+        "layer_type": "CONV_2D",
+        "delegate": true
       }
     },
     "layer_36": {
@@ -2185,6 +2329,10 @@
           "memory_cost": 16,
           "communication_cost": 2
         }
+      },
+      "bpso_decision": {
+        "layer_type": "RESHAPE",
+        "delegate": false
       }
     },
     "layer_37": {
@@ -2244,6 +2392,10 @@
           "memory_cost": 256,
           "communication_cost": 25
         }
+      },
+      "bpso_decision": {
+        "layer_type": "SOFTMAX",
+        "delegate": false
       }
     },
     "layer_38": {
@@ -2303,6 +2455,10 @@
           "memory_cost": 64,
           "communication_cost": 6
         }
+      },
+      "bpso_decision": {
+        "layer_type": "DEQUANTIZE",
+        "delegate": false
       }
     }
   }
