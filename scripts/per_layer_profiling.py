@@ -132,13 +132,18 @@ class LayerProfiler:
     def profile_model_per_layer(self, model_name: str, delegate_type: str = "sa_sim") -> Dict:
         """Profile a model and return per-layer metrics for partitioning algorithms"""
         
+        print(f"DEBUG: Starting profile_model_per_layer for {model_name}")
+        
         model_path = f"{self.models_dir}/{model_name}"
         binary_path = f"bazel-bin/tensorflow/lite/delegates/utils/{delegate_type}_delegate/label_image_plus_{delegate_type}_delegate"
         
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model not found: {model_path}")
             
-        print(f"Profiling {model_name} with {delegate_type} delegate...")
+        if not os.path.exists(binary_path):
+            raise FileNotFoundError(f"Binary not found: {binary_path}")
+        
+        print(f"DEBUG: About to call get_layer_info_from_tflite_verbose")
         
         # Clean previous profiling data
         csv_output = f"{self.outputs_dir}/{delegate_type}_sim.csv"
