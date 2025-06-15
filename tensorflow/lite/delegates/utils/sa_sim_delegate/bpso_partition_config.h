@@ -26,8 +26,6 @@ struct LayerPartition {
   bool force_delegation;  // Override delegate selection
 };
 
-// BPSO (Binary Particle Swarm Optimization) Partition Configuration
-// Controls binary decisions: CPU (0) or SA Accelerator (1) for each layer
 class BPSOPartitionConfig {
  public:
   BPSOPartitionConfig() = default;
@@ -35,11 +33,7 @@ class BPSOPartitionConfig {
   // Load BPSO optimization results from CSV/JSON
   bool LoadPartitionConfig(const std::string& config_file);
   
-  // Load BPSO binary vector directly
-  // binary_partition[i] = {0=CPU, 1=SA_Accelerator} for layer i
-  bool LoadBinaryPartition(const std::vector<int>& binary_partition);
-  
-  // Check if a specific layer should be delegated (BPSO decision)
+  // Check if a specific layer should be delegated
   bool ShouldDelegateLayer(int layer_id, const std::string& op_type) const;
   
   // Get processing unit assignment for a layer
@@ -76,7 +70,7 @@ void InitializeBPSOPartitionConfig();
 void CleanupBPSOPartitionConfig();
 
 }  // namespace sa_sim
-}  // namespace delegates  
+}  // namespace delegates
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_DELEGATES_SA_SIM_BPSO_PARTITION_CONFIG_H_
