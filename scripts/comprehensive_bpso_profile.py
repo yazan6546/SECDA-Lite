@@ -739,28 +739,363 @@ class BPSOWorkflowProfiler:
                 improvement = summary["performance_improvement"]["bpso_vs_default"]
                 print(f"  BPSO vs Default: {improvement:+.1f}% performance change")
 
+    def aggregate_json_to_csv(self, models, output_csv="comprehensive_profile_results.csv"):
+        """
+        Aggregate all JSON profiling results into a comprehensive CSV
+        
+        This function:
+        1. Runs per-layer profiling for each model (baseline, default, BPSO)
+        2. Loads all JSON results 
+        3. Aggregates metrics from both performance_metrics and partitioning_metrics
+        4. Generates a comprehensive CSV with all costs, energy, and efficiency data
+        """
+        print(f"\\n=== Aggregating JSON Results to CSV ===")
+        
+        all_results = []
+        
+        for model_name in models:
+            print(f"\\nProcessing model: {model_name}")
+            
+            # Define the profiling scenarios
+            scenarios = [
+                {
+                    "name": "baseline",
+                    "description": "CPU-only (no delegation)",
+                    "profile_name": f"{model_name.replace('.tflite', '_baseline')}",
+                    "use_delegate": False
+                },
+                {
+                    "name": "default_delegation", 
+                    "description": "Default SA delegate (all CONV2D)",
+                    "profile_name": f"{model_name.replace('.tflite', '_default')}",
+                    "use_delegate": True
+                },
+                {
+                    "name": "bpso_optimized",
+                    "description": "BPSO-optimized partitioning", 
+                    "profile_name": f"{model_name.replace('.tflite', '')}",
+                    "use_delegate": True,
+                    "use_bpso": True
+                }
+            ]
+            
+            for scenario in scenarios:
+                print(f"  Processing scenario: {scenario['name']}")
+                
+                # Generate per-layer profile if needed
+                if scenario['name'] == 'bpso_optimized':
+                    # For BPSO, first run per-layer profiling, then BPSO optimization
+                    self._run_per_layer_profiling(model_name, scenario['profile_name'])
+                    self._run_bpso_optimization()
+                else:
+                    # For baseline and default, just run per-layer profiling
+                    self._run_per_layer_profiling(model_name, scenario['profile_name'])
+                
+                # Load and aggregate JSON results
+                json_file = f"{self.workspace_dir}/results/{scenario['profile_name']}_partitioning_profile.json"
+                json_data = self.load_json_profile(json_file)
+                
+                if not json_data:
+                    print(f"    Warning: No JSON data for {scenario['name']}")
+                    continue
+                
+                # Aggregate all metrics
+                aggregated = self.aggregate_all_json_metrics(json_data, scenario)
+                aggregated['model_name'] = model_name
+                aggregated['scenario'] = scenario['name']
+                aggregated['scenario_description'] = scenario['description']
+                
+                all_results.append(aggregated)
+                print(f"    ✓ Aggregated {aggregated.get('total_layers', 0)} layers")
+        
+        # Write comprehensive CSV
+        self._write_comprehensive_csv(all_results, output_csv)
+        print(f"\\n✓ Comprehensive results saved to: {output_csv}")
+        
+        return all_results
+
+    def aggregate_all_json_metrics(self, json_data, scenario):
+        """
+        Comprehensive aggregation of both performance_metrics and partitioning_metrics
+        """
+        if not json_data or 'layers' not in json_data:
+            return {}
+        
+        # Initialize comprehensive metrics
+        metrics = {
+            # Basic info
+            'total_layers': json_data.get('total_layers', 0),
+            'delegated_layers': json_data.get('delegated_layers', 0),
+            'cpu_layers': 0,
+            
+            # Performance metrics aggregation (from SystemC simulation)
+            'total_read_cycles': 0,
+            'total_process_cycles': 0, 
+            'total_idle_cycles': 0,
+            'total_gemmw_cycles': 0,
+            'total_gemm_cycles': 0,
+            'total_wstall_cycles': 0,
+            'total_cycles': 0,
+            'total_effective_cycles': 0,
+            'total_gmacs': 0,
+            'total_outputs': 0,
+            'avg_compute_efficiency': 0,
+            'avg_memory_efficiency': 0,
+            'avg_gmacs_per_cycle': 0,
+            
+            # Performance costs
+            'total_execution_cost': 0,
+            'total_memory_cost': 0,
+            'total_communication_cost': 0,
+            
+            # Partitioning metrics aggregation
+            'total_compute_cycles': 0,
+            'total_memory_access_cycles': 0,
+            'total_data_movement_cycles': 0,
+            'avg_compute_intensity': 0,
+            'total_operation_weight': 0,
+            'total_buffer_requirement': 0,
+            'total_energy_cost': 0,
+            'compute_intensive_layers': 0,
+            'memory_intensive_layers': 0,
+            'avg_parallelization_factor': 0,
+            
+            # Cost breakdown (from partitioning_metrics)
+            'total_compute_cost': 0,
+            'breakdown_memory_cost': 0,
+            'breakdown_communication_cost': 0,
+            
+            # By delegation breakdown
+            'delegated_energy': 0,
+            'cpu_energy': 0,
+            'delegated_execution_cost': 0,
+            'cpu_execution_cost': 0,
+            'delegated_communication_cost': 0,
+            'cpu_communication_cost': 0,
+            
+            # Layer type statistics
+            'layer_type_distribution': {},
+            'delegated_layer_types': {},
+            'cpu_layer_types': {}
+        }
+        
+        # Track for averaging
+        efficiency_count = 0
+        intensity_count = 0
+        parallel_count = 0
+        
+        # Process each layer
+        for layer_key, layer_data in json_data['layers'].items():
+            if not isinstance(layer_data, dict):
+                continue
+            
+            is_delegated = layer_data.get('is_delegated', False)
+            layer_info = layer_data.get('layer_info', {})
+            layer_type = layer_info.get('layer_type', 'UNKNOWN')
+            
+            # Performance metrics aggregation
+            perf = layer_data.get('performance_metrics', {})
+            metrics['total_read_cycles'] += perf.get('read_cycles', 0)
+            metrics['total_process_cycles'] += perf.get('process_cycles', 0)
+            metrics['total_idle_cycles'] += perf.get('idle_cycles', 0)
+            metrics['total_gemmw_cycles'] += perf.get('gemmw_cycles', 0)
+            metrics['total_gemm_cycles'] += perf.get('gemm_cycles', 0)
+            metrics['total_wstall_cycles'] += perf.get('wstall_cycles', 0)
+            metrics['total_cycles'] += perf.get('total_cycles', 0)
+            metrics['total_effective_cycles'] += perf.get('effective_cycles', 0)
+            metrics['total_gmacs'] += perf.get('total_gmacs', 0)
+            metrics['total_outputs'] += perf.get('total_outputs', 0)
+            metrics['total_execution_cost'] += perf.get('execution_cost', 0)
+            metrics['total_memory_cost'] += perf.get('memory_cost', 0)
+            metrics['total_communication_cost'] += perf.get('communication_cost', 0)
+            
+            # Average efficiency metrics
+            if perf.get('compute_efficiency', 0) > 0:
+                metrics['avg_compute_efficiency'] += perf['compute_efficiency']
+                efficiency_count += 1
+            if perf.get('memory_efficiency', 0) > 0:
+                metrics['avg_memory_efficiency'] += perf['memory_efficiency']
+            if perf.get('gmacs_per_cycle', 0) > 0:
+                metrics['avg_gmacs_per_cycle'] += perf['gmacs_per_cycle']
+            
+            # Partitioning metrics aggregation
+            part = layer_data.get('partitioning_metrics', {})
+            metrics['total_compute_cycles'] += part.get('compute_cycles', 0)
+            metrics['total_memory_access_cycles'] += part.get('memory_access_cycles', 0)
+            metrics['total_data_movement_cycles'] += part.get('data_movement_cycles', 0)
+            metrics['total_operation_weight'] += part.get('operation_weight', 0)
+            metrics['total_buffer_requirement'] += part.get('buffer_requirement', 0)
+            metrics['total_energy_cost'] += part.get('energy_cost', 0)
+            
+            if part.get('compute_intensity', 0) > 0:
+                metrics['avg_compute_intensity'] += part['compute_intensity']
+                intensity_count += 1
+            
+            if part.get('parallelization_factor', 0) > 0:
+                metrics['avg_parallelization_factor'] += part['parallelization_factor']
+                parallel_count += 1
+            
+            if part.get('is_compute_intensive', False):
+                metrics['compute_intensive_layers'] += 1
+            if part.get('is_memory_intensive', False):
+                metrics['memory_intensive_layers'] += 1
+            
+            # Cost breakdown
+            breakdown = part.get('execution_cost_breakdown', {})
+            metrics['total_compute_cost'] += breakdown.get('compute_cost', 0)
+            metrics['breakdown_memory_cost'] += breakdown.get('memory_cost', 0)
+            metrics['breakdown_communication_cost'] += breakdown.get('communication_cost', 0)
+            
+            # Track layer types
+            metrics['layer_type_distribution'][layer_type] = metrics['layer_type_distribution'].get(layer_type, 0) + 1
+            
+            # Delegation breakdown
+            if is_delegated:
+                metrics['delegated_energy'] += part.get('energy_cost', 0)
+                metrics['delegated_execution_cost'] += perf.get('execution_cost', 0)
+                metrics['delegated_communication_cost'] += perf.get('communication_cost', 0)
+                metrics['delegated_layer_types'][layer_type] = metrics['delegated_layer_types'].get(layer_type, 0) + 1
+            else:
+                metrics['cpu_layers'] += 1
+                metrics['cpu_energy'] += part.get('energy_cost', 0)
+                metrics['cpu_execution_cost'] += perf.get('execution_cost', 0)
+                metrics['cpu_communication_cost'] += perf.get('communication_cost', 0)
+                metrics['cpu_layer_types'][layer_type] = metrics['cpu_layer_types'].get(layer_type, 0) + 1
+        
+        # Calculate averages
+        total_layers = len(json_data['layers'])
+        if efficiency_count > 0:
+            metrics['avg_compute_efficiency'] /= efficiency_count
+            metrics['avg_memory_efficiency'] /= efficiency_count
+            metrics['avg_gmacs_per_cycle'] /= efficiency_count
+        
+        if intensity_count > 0:
+            metrics['avg_compute_intensity'] /= intensity_count
+        
+        if parallel_count > 0:
+            metrics['avg_parallelization_factor'] /= parallel_count
+        
+        # Add scenario-specific metrics
+        if scenario.get('use_bpso', False):
+            # Load BPSO configuration stats
+            bpso_config = f"{self.workspace_dir}/outputs/bpso_partition_config.csv"
+            if os.path.exists(bpso_config):
+                bpso_stats = self.analyze_bpso_config(bpso_config)
+                metrics.update(bpso_stats)
+        
+        return metrics
+
+    def _run_per_layer_profiling(self, model_name, profile_name):
+        """Run per-layer profiling for a specific model and profile name"""
+        print(f"    Running per-layer profiling for {profile_name}...")
+        
+        cmd = [
+            "python3", "scripts/per_layer_profiling.py",
+            "--model", f"models/{model_name}",
+            "--output_dir", "outputs",
+            "--model_name", profile_name
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+        if result.returncode != 0:
+            print(f"    Warning: Per-layer profiling failed: {result.stderr}")
+        
+        return result.returncode == 0
+
+    def _run_bpso_optimization(self):
+        """Run BPSO optimization"""
+        print(f"    Running BPSO optimization...")
+        
+        cmd = ["python3", "bpso_layer_partitioning.py"]
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=f"{self.workspace_dir}/scripts")
+        
+        if result.returncode != 0:
+            print(f"    Warning: BPSO optimization failed: {result.stderr}")
+        
+        return result.returncode == 0
+
+    def _write_comprehensive_csv(self, all_results, output_csv):
+        """Write comprehensive aggregated results to CSV"""
+        if not all_results:
+            print("No results to write to CSV")
+            return
+        
+        output_path = f"{self.workspace_dir}/{output_csv}"
+        
+        # Define CSV columns
+        csv_columns = [
+            # Basic info
+            'model_name', 'scenario', 'scenario_description',
+            'total_layers', 'delegated_layers', 'cpu_layers',
+            
+            # Performance metrics (SystemC simulation)
+            'total_cycles', 'total_effective_cycles',
+            'total_read_cycles', 'total_process_cycles', 'total_idle_cycles',
+            'total_gemmw_cycles', 'total_gemm_cycles', 'total_wstall_cycles',
+            'total_gmacs', 'total_outputs',
+            'avg_compute_efficiency', 'avg_memory_efficiency', 'avg_gmacs_per_cycle',
+            
+            # Performance costs
+            'total_execution_cost', 'total_memory_cost', 'total_communication_cost',
+            
+            # Partitioning metrics
+            'total_compute_cycles', 'total_memory_access_cycles', 'total_data_movement_cycles',
+            'avg_compute_intensity', 'total_operation_weight', 'total_buffer_requirement',
+            'total_energy_cost', 'compute_intensive_layers', 'memory_intensive_layers',
+            'avg_parallelization_factor',
+            
+            # Cost breakdown
+            'total_compute_cost', 'breakdown_memory_cost', 'breakdown_communication_cost',
+            
+            # Delegation breakdown
+            'delegated_energy', 'cpu_energy',
+            'delegated_execution_cost', 'cpu_execution_cost',
+            'delegated_communication_cost', 'cpu_communication_cost',
+            
+            # BPSO metrics (if available)
+            'bpso_sa_layers', 'bpso_cpu_layers', 'bpso_fitness_score'
+        ]
+        
+        try:
+            with open(output_path, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=csv_columns, extrasaction='ignore')
+                writer.writeheader()
+                
+                for result in all_results:
+                    # Flatten nested dictionaries for CSV
+                    csv_row = {}
+                    for col in csv_columns:
+                        csv_row[col] = result.get(col, 0)
+                    
+                    writer.writerow(csv_row)
+            
+            print(f"✓ Comprehensive CSV written to: {output_path}")
+            
+        except Exception as e:
+            print(f"Error writing CSV: {e}")
+
+# Test function to run JSON aggregation
 def main():
-    parser = argparse.ArgumentParser(description="SECDA-Lite Comprehensive BPSO Workflow Profiler")
-    parser.add_argument("--models", nargs="+", default=["mobilenetv1.tflite", "mobilenetv2.tflite"],
-                       help="Models to test")
-    parser.add_argument("--workspace", default="/workspaces/SECDA-Lite",
+    """Test the comprehensive JSON aggregation workflow"""
+    parser = argparse.ArgumentParser(description="Comprehensive BPSO Workflow Profiler")
+    parser.add_argument("--models", nargs="+", default=["mobilenetv1.tflite", "mobilenetv2.tflite"], 
+                       help="Models to profile")
+    parser.add_argument("--output_csv", default="comprehensive_profile_results.csv",
+                       help="Output CSV file name")
+    parser.add_argument("--workspace", default="/root/Workspace/tensorflow",
                        help="Workspace directory")
     
     args = parser.parse_args()
     
+    # Initialize profiler
     profiler = BPSOWorkflowProfiler(workspace_dir=args.workspace)
     
-    try:
-        # Run comprehensive workflow
-        results = profiler.run_comprehensive_workflow(models=args.models)
-        print("\\nProfiling completed successfully!")
-        return 0
-        
-    except Exception as e:
-        print(f"Error during profiling: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
+    # Run comprehensive JSON aggregation
+    results = profiler.aggregate_json_to_csv(args.models, args.output_csv)
+    
+    print(f"\\n=== Summary ===")
+    print(f"Processed {len(results)} profiling scenarios")
+    print(f"Results saved to: {args.output_csv}")
 
 if __name__ == "__main__":
-    exit(main())
+    main()
