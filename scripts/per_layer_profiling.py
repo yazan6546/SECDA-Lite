@@ -99,8 +99,8 @@ class LayerProfiler:
             print(f"Error extracting layer info: {e}")
             return []
 
-    def parse_systemc_profiling_per_layer(self, csv_file: str) -> Dict[str, Dict]:
-        """Parse SystemC profiling CSV to extract per-layer metrics"""
+    def parse_systemc_profiling_per_layer(self, csv_file: str, num_delegated_layers: int = 15) -> Dict[str, Dict]:
+        """Parse SystemC profiling CSV to extract per-layer metrics by aggregating SystemC simulation steps"""
         layer_metrics = {}
         
         if not os.path.exists(csv_file):
@@ -109,24 +109,69 @@ class LayerProfiler:
             
         try:
             df = pd.read_csv(csv_file)
+            print(f"DEBUG: CSV has {len(df)} rows, aggregating for {num_delegated_layers} delegated layers")
             
-            for idx, row in df.iterrows():
-                layer_name = f"layer_{idx}"
+            # Calculate metrics per layer by dividing total rows by number of delegated layers
+            rows_per_layer = len(df) // num_delegated_layers if num_delegated_layers > 0 else 1
+            
+            for layer_idx in range(num_delegated_layers):
+                start_row = layer_idx * rows_per_layer
+                end_row = start_row + rows_per_layer
                 
-                # Extract cycle counts and costs per layer using actual CSV columns
+                # Handle last layer to include any remaining rows
+                if layer_idx == num_delegated_layers - 1:
+                    end_row = len(df)
+                
+                layer_data = df.iloc[start_row:end_row]
+                layer_name = f"delegated_layer_{layer_idx}"
+                
+                # Aggregate SystemC metrics for this layer
                 layer_metrics[layer_name] = {
-                    'read_cycles': row.get('read_cycles', 0),
-                    'process_cycles': row.get('process_cycles', 0),
-                    'idle_cycles': row.get('idle', 0),
-                    'gemmw_cycles': row.get('gemmw', 0),
-                    'gemm_cycles': row.get('gemm', 0),
-                    'wstall_cycles': row.get('wstall', 0),
-                    'inputbuf_power': row.get('inputbuf_p', 0),
-                    'weightbuf_power': row.get('weightbuf_p', 0),
-                    'gmacs': row.get('gmacs', 0),
-                    'gouts': row.get('gouts', 0),
-                    'total_cycles': row.get('read_cycles', 0) + row.get('process_cycles', 0),
-                    'compute_efficiency': row.get('gmacs', 0) / max(row.get('process_cycles', 1), 1)
+                    # Sum up all cycles for this layer
+                    'read_cycles': int(layer_data['read_cycles'].sum()),
+                    'process_cycles': int(layer_data['process_cycles'].sum()),
+                    'idle_cycles': int(layer_data['idle'].sum()),
+                    'gemmw_cycles': int(layer_data['gemmw'].sum()),
+                    'gemm_cycles': int(layer_data['gemm'].sum()),
+                    'wstall_cycles': int(layer_data['wstall'].sum()),
+                    
+                    # Maximum buffer usage for this layer
+                    'max_input_buffer': int(layer_data['inputbuf_p'].max()),
+                    'max_weight_buffer': int(layer_data['weightbuf_p'].max()),
+                    
+                    # Total operations for this layer
+                    'total_gmacs': int(layer_data['gmacs'].sum()),
+                    'total_outputs': int(layer_data['gouts'].sum()),
+                    
+                    # Calculated metrics
+                    'total_cycles': int(layer_data['read_cycles'].sum() + 
+                                      layer_data['process_cycles'].sum() + 
+                                      layer_data['idle'].sum()),
+                    'effective_cycles': int(layer_data['read_cycles'].sum() + 
+                                          layer_data['process_cycles'].sum()),
+                    
+                    # Efficiency metrics (percentages)
+                    'compute_efficiency': (layer_data['process_cycles'].sum() / 
+                                         max(1, layer_data['read_cycles'].sum() + 
+                                             layer_data['process_cycles'].sum() + 
+                                             layer_data['idle'].sum())) * 100,
+                    
+                    'memory_efficiency': (layer_data['read_cycles'].sum() / 
+                                        max(1, layer_data['read_cycles'].sum() + 
+                                            layer_data['wstall'].sum())) * 100,
+                    
+                    # Performance metrics
+                    'gmacs_per_cycle': layer_data['gmacs'].sum() / max(1, layer_data['process_cycles'].sum()),
+                    
+                    # Cost estimation for optimization algorithms
+                    'execution_cost': int(layer_data['read_cycles'].sum() * 1.0 + 
+                                        layer_data['process_cycles'].sum() * 2.0 + 
+                                        layer_data['idle'].sum() * 0.5),
+                    
+                    'memory_cost': int(layer_data['inputbuf_p'].max() + 
+                                     layer_data['weightbuf_p'].max()),
+                    
+                    'communication_cost': int(layer_data['read_cycles'].sum() * 0.1)
                 }
                 
         except Exception as e:
@@ -169,17 +214,37 @@ class LayerProfiler:
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
             
+            # Extract number of delegated layers from output
+            num_delegated_layers = 0
+            output_text = result.stdout + result.stderr
+            for line in output_text.split('\n'):
+                if "nodes delegated out of" in line:
+                    # Extract: "INFO: SASimDelegate delegate: 15 nodes delegated out of 39 nodes"
+                    parts = line.split("nodes delegated out of")
+                    if len(parts) > 0:
+                        try:
+                            num_delegated_layers = int(parts[0].split()[-1])
+                            print(f"DEBUG: Found {num_delegated_layers} delegated layers")
+                            break
+                        except ValueError:
+                            pass
+            
+            if num_delegated_layers == 0:
+                print("DEBUG: No delegated layers found, using default estimate of 15")
+                num_delegated_layers = 15
+            
             # Get layer information
             layers = self.get_layer_info_from_tflite_verbose(model_path, binary_path)
             
-            # Parse SystemC profiling data
-            layer_metrics = self.parse_systemc_profiling_per_layer(csv_output)
+            # Parse SystemC profiling data with correct number of delegated layers
+            layer_metrics = self.parse_systemc_profiling_per_layer(csv_output, num_delegated_layers)
             
             # Combine layer info with profiling metrics
             profile_data = {
                 'model_name': model_name,
                 'delegate_type': delegate_type,
                 'total_layers': len(layers),
+                'delegated_layers': num_delegated_layers,
                 'layers': {}
             }
             
