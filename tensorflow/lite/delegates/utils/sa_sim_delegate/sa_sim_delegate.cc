@@ -516,7 +516,25 @@ class SASimDelegateKernel : public SimpleDelegateKernelInterface {
 class SASimDelegate : public SimpleDelegateInterface {
  public:
   explicit SASimDelegate(const SASimDelegateOptions& options)
-      : options_(options) {}
+      : options_(options) {
+    // Initialize BPSO partition configuration if enabled
+    if (options.enable_bpso_partitioning && options.bpso_partition_config_path != nullptr) {
+      delegates::sa_sim::InitializeBPSOPartitionConfig();
+      if (delegates::sa_sim::g_bpso_partition_config != nullptr) {
+        bool loaded = delegates::sa_sim::g_bpso_partition_config->LoadPartitionConfig(
+            std::string(options.bpso_partition_config_path));
+        if (loaded) {
+          delegates::sa_sim::g_bpso_partition_config->SetBPSOControlEnabled(true);
+          std::cout << "BPSO: Partition control enabled with config: " 
+                    << options.bpso_partition_config_path << std::endl;
+          delegates::sa_sim::g_bpso_partition_config->PrintPartitionConfig();
+        } else {
+          std::cerr << "BPSO: Failed to load partition config: " 
+                    << options.bpso_partition_config_path << std::endl;
+        }
+      }
+    }
+  }
 
   bool IsNodeSupportedByDelegate(const TfLiteRegistration* registration,
                                  const TfLiteNode* node,
@@ -613,6 +631,8 @@ SASimDelegateOptions TfLiteSASimDelegateOptionsDefault() {
   // Just assign an invalid builtin code so that this sasim test delegate will
   // not support any node by default.
   options.allowed_builtin_code = -1;
+  options.bpso_partition_config_path = nullptr;
+  options.enable_bpso_partitioning = false;
   return options;
 }
 

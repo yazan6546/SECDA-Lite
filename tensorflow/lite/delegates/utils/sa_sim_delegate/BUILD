@@ -29,7 +29,7 @@ cc_library(
         "util.h",
     ],
     deps = [
-        ":pbso_partition_config",
+        ":bpso_partition_config",
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/delegates/utils:simple_delegate",
         "//tensorflow/lite/kernels:padding",
