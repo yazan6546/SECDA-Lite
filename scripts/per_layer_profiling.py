@@ -135,7 +135,7 @@ class LayerProfiler:
         print(f"DEBUG: Starting profile_model_per_layer for {model_name}")
         
         model_path = f"{self.models_dir}/{model_name}"
-        binary_path = f"bazel-bin/tensorflow/lite/delegates/utils/{delegate_type}_delegate/label_image_plus_{delegate_type}_delegate"
+        binary_path = f"{self.workspace_dir}/bazel-bin/tensorflow/lite/delegates/utils/{delegate_type}_delegate/label_image_plus_{delegate_type}_delegate"
         
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model not found: {model_path}")
