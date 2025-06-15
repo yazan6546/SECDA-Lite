@@ -1,0 +1,2 @@
+total_layers,delegated_layers,total_cycles,total_energy_cost,total_execution_cost,total_memory_cost,total_communication_cost,total_compute_cost,total_gmacs,compute_efficiency_avg,memory_efficiency_avg
+39,15,10111752,19702876,19702876,134592,45383,19236358.0,3198385,72.30966294544338,80.90574104252076
