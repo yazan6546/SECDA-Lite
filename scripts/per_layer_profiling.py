@@ -146,7 +146,7 @@ class LayerProfiler:
         print(f"DEBUG: About to call get_layer_info_from_tflite_verbose")
         
         # Clean previous profiling data
-        csv_output = f"{self.outputs_dir}/{delegate_type}_sim.csv"
+        csv_output = f"{self.outputs_dir}/sa_sim.csv"
         if os.path.exists(csv_output):
             os.remove(csv_output)
             
