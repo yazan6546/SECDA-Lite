@@ -517,6 +517,10 @@ class LayerProfiler:
                 'sa_suitable': metrics['layer_type'] in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED'],
                 'cpu_preferred': metrics['layer_type'] in ['POOLING', 'RELU', 'SOFTMAX', 'RESHAPE'],
                 
+                # Layer characteristics for partitioning algorithms
+                'memory_bound': 1 if metrics.get('memory_accesses', 500) > metrics.get('compute_cycles', 1000) else 0,
+                'compute_bound': 1 if metrics.get('compute_cycles', 1000) > metrics.get('memory_accesses', 500) else 0,
+                
                 # Static energy costs
                 'cpu_energy_nj': metrics.get('energy_cost', 100),
                 'sa_energy_nj': metrics.get('energy_cost', 50) if metrics['layer_type'] in ['CONV_2D', 'DEPTHWISE_CONV_2D'] else 100,
