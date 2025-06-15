@@ -161,14 +161,15 @@ class BPSOWorkflowProfiler:
         
         return total_metrics
 
-    def run_per_layer_profiling(self, model_name, profile_suffix=""):
+    def run_per_layer_profiling(self, model_name, profile_suffix="", delegate_type="sa_sim"):
         """Run per-layer profiling and return JSON metrics"""
         profile_name = model_name.replace('.tflite', '') + profile_suffix
-        print(f"DEBUG: Running per-layer profiling for {profile_name}...")
+        print(f"DEBUG: Running per-layer profiling for {profile_name} with delegate {delegate_type}...")
         
         profile_cmd = [
             "python3", "scripts/per_layer_profiling.py",
             "--model", f"models/{model_name}",
+            "--delegate", delegate_type,
             "--output_dir", "outputs",
             "--model_name", profile_name
         ]
@@ -184,8 +185,9 @@ class BPSOWorkflowProfiler:
         else:
             print(f"  SUCCESS: Per-layer profiling completed")
         
-        # Load JSON profile - per_layer_profiling.py uses the original model_name (with .tflite)
-        json_file = f"{self.results_dir}/{model_name}_partitioning_profile.json"
+        # Load JSON profile - per_layer_profiling.py uses the model_name passed via --model_name
+        json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
+        print(f"  DEBUG: Looking for JSON file: {json_file}")
         json_data = self.load_json_profile(json_file)
         
         if json_data:
@@ -197,8 +199,8 @@ class BPSOWorkflowProfiler:
         """Run baseline CPU-only profiling using JSON metrics only"""
         print(f"\\n=== Running BASELINE (CPU-only) profiling for {model_name} ===")
         
-        # Generate baseline per-layer profile 
-        json_metrics = self.run_per_layer_profiling(model_name, "_baseline")
+        # Generate baseline per-layer profile with no delegation
+        json_metrics = self.run_per_layer_profiling(model_name, "_baseline", "baseline")
         
         results = {
             "execution_mode": "baseline_cpu",
@@ -217,8 +219,8 @@ class BPSOWorkflowProfiler:
         """Run default SA sim delegation (all CONV2D layers) with per-layer JSON profile"""
         print(f"\\n=== Running DEFAULT DELEGATION profiling for {model_name} ===")
         
-        # Generate default delegation per-layer profile
-        json_metrics = self.run_per_layer_profiling(model_name, "_default")
+        # Generate default delegation per-layer profile with standard sa_sim delegate
+        json_metrics = self.run_per_layer_profiling(model_name, "_default", "sa_sim")
         
         results = {
             "execution_mode": "default_delegation",
@@ -239,12 +241,12 @@ class BPSOWorkflowProfiler:
         """Run BPSO-optimized delegation with JSON metrics"""
         print(f"\\n=== Running BPSO OPTIMIZATION profiling for {model_name} ===")
         
-        # Step 1: Generate per-layer profiling data
-        print("  Step 1: Generating per-layer profiling data...")
-        json_metrics = self.run_per_layer_profiling(model_name, "")
+        # Step 1: Generate initial per-layer profiling data for BPSO optimization
+        print("  Step 1: Generating initial per-layer profiling data...")
+        initial_json_metrics = self.run_per_layer_profiling(model_name, "_initial", "sa_sim")
         
-        if not json_metrics:
-            print("  ERROR: Failed to generate per-layer profile")
+        if not initial_json_metrics:
+            print("  ERROR: Failed to generate initial per-layer profile")
             return {}
         
         # Step 2: Run BPSO optimization
@@ -267,23 +269,66 @@ class BPSOWorkflowProfiler:
             print(f"  ERROR: BPSO config not found: {bpso_config_path}")
             return {}
         
+        # Step 3: Run profiling with BPSO configuration
+        print("  Step 3: Running profiling with BPSO configuration...")
+        bpso_json_metrics = self.run_per_layer_profiling_with_bpso(model_name, "_bpso", bpso_config_path)
+        
+        if not bpso_json_metrics:
+            print("  WARNING: BPSO profiling failed, using initial metrics")
+            bpso_json_metrics = initial_json_metrics
+        
         # Analyze BPSO configuration
         bpso_stats = self.analyze_bpso_config(bpso_config_path)
         
         results = {
             "execution_mode": "bpso_optimized",
             "model": model_name,
-            "json_metrics": json_metrics,
-            "total_energy_cost": json_metrics.get('total_energy_cost', 0),
-            "total_execution_cost": json_metrics.get('total_execution_cost', 0),
-            "total_communication_cost": json_metrics.get('total_communication_cost', 0),
-            "total_cycles": json_metrics.get('total_cycles', 0),
+            "json_metrics": bpso_json_metrics,
+            "total_energy_cost": bpso_json_metrics.get('total_energy_cost', 0),
+            "total_execution_cost": bpso_json_metrics.get('total_execution_cost', 0),
+            "total_communication_cost": bpso_json_metrics.get('total_communication_cost', 0),
+            "total_cycles": bpso_json_metrics.get('total_cycles', 0),
             "bpso_optimization": bpso_stats,
             "bpso_config_file": bpso_config_path
         }
         
         print(f"  BPSO RESULTS: {results['total_energy_cost']} energy cost, {bpso_stats.get('sa_layers', 0)} SA layers")
         return results
+
+    def run_per_layer_profiling_with_bpso(self, model_name, profile_suffix, bpso_config_path):
+        """Run per-layer profiling with BPSO partition configuration"""
+        profile_name = model_name.replace('.tflite', '') + profile_suffix
+        print(f"DEBUG: Running BPSO per-layer profiling for {profile_name}...")
+        
+        profile_cmd = [
+            "python3", "scripts/per_layer_profiling.py",
+            "--model", f"models/{model_name}",
+            "--delegate", "sa_sim",
+            "--output_dir", "outputs",
+            "--model_name", profile_name,
+            "--bpso_config", bpso_config_path
+        ]
+        
+        print(f"  Command: {' '.join(profile_cmd)}")
+        
+        profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                       universal_newlines=True, cwd=self.workspace_dir)
+        
+        if profile_result.returncode != 0:
+            print(f"  ERROR: BPSO per-layer profiling failed: {profile_result.stderr}")
+            return {}
+        else:
+            print(f"  SUCCESS: BPSO per-layer profiling completed")
+        
+        # Load JSON profile
+        json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
+        print(f"  DEBUG: Looking for BPSO JSON file: {json_file}")
+        json_data = self.load_json_profile(json_file)
+        
+        if json_data:
+            return self.aggregate_json_metrics(json_data)
+        else:
+            return {}
 
     def analyze_bpso_config(self, config_file):
         """Analyze BPSO partition configuration"""

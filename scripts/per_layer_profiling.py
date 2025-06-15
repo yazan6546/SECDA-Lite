@@ -181,13 +181,28 @@ class LayerProfiler:
             
         return layer_metrics
 
-    def profile_model_per_layer(self, model_name: str, delegate_type: str = "sa_sim") -> Dict:
+    def profile_model_per_layer(self, model_file: str, delegate_type: str = "sa_sim", 
+                               output_model_name: str = None) -> Dict:
         """Profile a model and return per-layer metrics for partitioning algorithms"""
         
-        print(f"DEBUG: Starting profile_model_per_layer for {model_name}")
+        # Use output_model_name for file naming, or derive from model_file
+        if output_model_name:
+            model_name = output_model_name
+        else:
+            model_name = model_file.replace('.tflite', '')
+            
+        print(f"DEBUG: Starting profile_model_per_layer for {model_file} -> {model_name}")
         
-        model_path = f"{self.models_dir}/{model_name}"
-        binary_path = f"{self.workspace_dir}/bazel-bin/tensorflow/lite/delegates/utils/{delegate_type}_delegate/label_image_plus_{delegate_type}_delegate"
+        model_path = f"{self.models_dir}/{model_file}"
+        
+        # Handle different delegate types
+        if delegate_type is None or delegate_type == 'baseline':
+            # No delegate - use baseline benchmark model
+            binary_path = f"{self.workspace_dir}/bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model_plus_flex"
+            delegate_flag = ""
+        else:
+            binary_path = f"{self.workspace_dir}/bazel-bin/tensorflow/lite/delegates/utils/{delegate_type}_delegate/label_image_plus_{delegate_type}_delegate"
+            delegate_flag = f"--use_{delegate_type}_delegate=true"
         
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model not found: {model_path}")
@@ -195,23 +210,34 @@ class LayerProfiler:
         if not os.path.exists(binary_path):
             raise FileNotFoundError(f"Binary not found: {binary_path}")
         
-        print(f"DEBUG: About to call get_layer_info_from_tflite_verbose")
+        print(f"DEBUG: Using binary: {binary_path}")
+        print(f"DEBUG: Delegate type: {delegate_type}")
         
         # Clean previous profiling data
         csv_output = f"{self.outputs_dir}/sa_sim.csv"
         if os.path.exists(csv_output):
             os.remove(csv_output)
             
-        # Run inference with delegate enabled
-        cmd = [
-            binary_path,
-            f"--tflite_model={model_path}",
-            "--image=test_images/grace_hopper.bmp",
-            "--labels=tensorflow/lite/examples/ios/camera/data/labels.txt",
-            f"--use_{delegate_type}_delegate=true",
-            "-p", "1",
-            "--verbose", "1"
-        ]
+        # Run inference with appropriate configuration
+        if delegate_type is None or delegate_type == 'baseline':
+            # Baseline mode - use benchmark_model
+            cmd = [
+                binary_path,
+                f"--graph={model_path}",
+                "--num_runs=1",
+                "--enable_op_profiling=true"
+            ]
+        else:
+            # Delegate mode - use label_image
+            cmd = [
+                binary_path,
+                f"--tflite_model={model_path}",
+                "--image=test_images/grace_hopper.bmp",
+                "--labels=tensorflow/lite/examples/ios/camera/data/labels.txt",
+                delegate_flag,
+                "-p", "1",
+                "--verbose", "1"
+            ]
         
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
@@ -590,13 +616,43 @@ class LayerProfiler:
 
 def main():
     """Main function for per-layer profiling"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Per-layer profiling for SECDA-Lite models")
+    parser.add_argument("--model", default="mobilenetv1.tflite", 
+                       help="Model file to profile (relative to models dir)")
+    parser.add_argument("--delegate", default="sa_sim",
+                       help="Delegate type: 'sa_sim', 'baseline', or 'none'")
+    parser.add_argument("--model_name", default=None,
+                       help="Output model name (used for file naming)")
+    parser.add_argument("--output_dir", default="outputs",
+                       help="Output directory for results")
+    parser.add_argument("--bpso_config", default=None,
+                       help="Path to BPSO partition config file")
+    
+    args = parser.parse_args()
+    
+    # Use model name from args or derive from model file
+    if args.model_name:
+        model_name = args.model_name
+    else:
+        model_name = args.model.replace('.tflite', '')
+    
+    print(f"=== Per-layer profiling ===")
+    print(f"Model: {args.model}")
+    print(f"Delegate: {args.delegate}")
+    print(f"Model name: {model_name}")
+    print(f"BPSO config: {args.bpso_config}")
     
     profiler = LayerProfiler()
     
-    # Test with a single model first
-    print("=== Testing per-layer profiling with MobileNetV1 ===")
+    # Set delegate mode for profiling
+    delegate_type = args.delegate
+    if delegate_type == 'none' or delegate_type == 'baseline':
+        delegate_type = None  # No delegation for baseline
+    
     try:
-        profile_data = profiler.profile_model_per_layer('mobilenetv1.tflite', 'sa_sim')
+        profile_data = profiler.profile_model_per_layer(args.model, delegate_type, model_name)
         if profile_data:
             report_file = profiler.generate_partitioning_report(profile_data)
             
@@ -604,12 +660,12 @@ def main():
             pbso_df = profiler.extract_pbso_dag_data(profile_data)
             
             # Print summary for verification
-            print(f"\nSummary for PBSO+DAG partitioning algorithm:")
+            print(f"\nSummary for {delegate_type or 'baseline'} profiling:")
             print(f"Model: {profile_data['model_name']}")
             print(f"Total layers: {profile_data['total_layers']}")
             print(f"PBSO DAG data shape: {pbso_df.shape}")
             
-            print(f"\nFirst 5 layers for DAG modeling:")
+            print(f"\nFirst 5 layers:")
             for _, row in pbso_df.head().iterrows():
                 print(f"  {row['layer_name']}: {row['layer_type']} - CPU:{row['cpu_cycles']} SA:{row['sa_accelerator_cycles']} cycles")
                 
@@ -619,13 +675,14 @@ def main():
             print(f"  Total SA Accelerator cycles: {pbso_df['sa_accelerator_cycles'].sum():,}")
             print(f"  Memory bound layers: {pbso_df['memory_bound'].sum()}")
             print(f"  Compute bound layers: {pbso_df['compute_bound'].sum()}")
+            
+            print(f"\nProfile saved to: {report_file}")
                 
     except Exception as e:
-        print(f"Error in test profiling: {e}")
-        
-    # Uncomment to profile all models
-    # print("\n=== Profiling all models for partitioning ===")
-    # profiler.profile_all_models_for_partitioning()
+        print(f"Error in profiling: {e}")
+        return 1
+    
+    return 0
 
 if __name__ == "__main__":
     main()
