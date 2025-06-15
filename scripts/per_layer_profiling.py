@@ -263,10 +263,13 @@ class LayerProfiler:
                     # Use SystemC profiling data for delegated layers
                     delegated_name = f"delegated_layer_{delegated_layer_idx}"
                     layer_metrics_data = layer_metrics.get(delegated_name, {})
+                    # Update layer info to reflect delegation status
+                    layer['is_delegated'] = True
                     delegated_layer_idx += 1
                 else:
                     # Use empty metrics for CPU-only layers
                     layer_metrics_data = {}
+                    layer['is_delegated'] = False
                 
                 profile_data['layers'][layer_name] = {
                     'layer_id': i,  # Add layer_id here
@@ -283,41 +286,55 @@ class LayerProfiler:
             return {}
 
     def calculate_partitioning_metrics(self, layer_info: Dict, perf_metrics: Dict) -> Dict:
-        """Calculate specific metrics useful for partitioning algorithms"""
+        """Calculate specific metrics useful for partitioning algorithms using SystemC data"""
         
-        # Base metrics
-        clock_cycles = perf_metrics.get('clock_cycles', 0)
-        memory_cycles = perf_metrics.get('memory_read_cycles', 0) + perf_metrics.get('memory_write_cycles', 0)
-        compute_cycles = perf_metrics.get('compute_cycles', 0)
+        # Extract SystemC profiling data (use actual column names from SystemC)
+        total_cycles = perf_metrics.get('total_cycles', 0)
+        process_cycles = perf_metrics.get('process_cycles', 0)
+        read_cycles = perf_metrics.get('read_cycles', 0)
+        memory_access_cycles = read_cycles + perf_metrics.get('wstall_cycles', 0)
         
-        # Partitioning-specific metrics
+        # Partitioning-specific metrics for PBSO algorithms
         partitioning_metrics = {
-            # Core cycle metrics (what you want for partitioning)
-            'total_cycles': clock_cycles,
-            'compute_cycles': compute_cycles,
-            'memory_access_cycles': memory_cycles,
-            'data_movement_cycles': perf_metrics.get('data_movement_cycles', 0),
+            # Core cycle metrics (what PBSO needs for cost functions)
+            'total_cycles': total_cycles,
+            'compute_cycles': process_cycles,  # Use process_cycles as compute
+            'memory_access_cycles': memory_access_cycles,
+            'data_movement_cycles': read_cycles,  # Data movement includes read operations
             
-            # Compute intensity (compute/memory ratio) - important for device selection
-            'compute_intensity': compute_cycles / max(memory_cycles, 1),
+            # Compute intensity (compute/memory ratio) - critical for device selection
+            'compute_intensity': process_cycles / max(memory_access_cycles, 1),
             
-            # Operation complexity (for scheduling)
-            'operation_weight': clock_cycles * (1 + layer_info.get('params', 0) / 1000),
+            # Operation complexity (for scheduling priority)
+            'operation_weight': total_cycles * (1 + layer_info.get('params', 0) / 1000),
             
-            # Resource requirements
-            'buffer_requirement': perf_metrics.get('buffer_usage', 0),
-            'energy_cost': perf_metrics.get('energy_cost', 0),
+            # Resource requirements (from SystemC buffer data)
+            'buffer_requirement': perf_metrics.get('max_input_buffer', 0) + perf_metrics.get('max_weight_buffer', 0),
+            'energy_cost': perf_metrics.get('execution_cost', 0),  # Use execution_cost as energy proxy
             
             # Layer characteristics for partitioning decisions
             'layer_type': layer_info.get('layer_type', 'UNKNOWN'),
-            'is_compute_intensive': compute_cycles > memory_cycles,
-            'is_memory_intensive': memory_cycles > compute_cycles,
+            'is_compute_intensive': process_cycles > memory_access_cycles,
+            'is_memory_intensive': memory_access_cycles > process_cycles,
             
-            # Communication cost (for edge partitioning)
-            'communication_cost': self.estimate_communication_cost(layer_info),
+            # Communication cost (for edge partitioning) - use SystemC communication cost if available
+            'communication_cost': perf_metrics.get('communication_cost', self.estimate_communication_cost(layer_info)),
             
-            # Parallelization potential
-            'parallelization_factor': self.estimate_parallelization_factor(layer_info)
+            # Parallelization potential based on operation type
+            'parallelization_factor': self.estimate_parallelization_factor(layer_info),
+            
+            # Additional SystemC-specific metrics for advanced partitioning
+            'gmacs_per_cycle': perf_metrics.get('gmacs_per_cycle', 0),
+            'compute_efficiency': perf_metrics.get('compute_efficiency', 0),
+            'memory_efficiency': perf_metrics.get('memory_efficiency', 0),
+            'total_gmacs': perf_metrics.get('total_gmacs', 0),
+            
+            # Cost breakdown for multi-objective optimization
+            'execution_cost_breakdown': {
+                'compute_cost': process_cycles * 2.0,  # Higher weight for compute
+                'memory_cost': perf_metrics.get('memory_cost', 0),
+                'communication_cost': perf_metrics.get('communication_cost', 0)
+            }
         }
         
         return partitioning_metrics
@@ -543,12 +560,12 @@ def main():
             
             print(f"\nFirst 5 layers for DAG modeling:")
             for _, row in pbso_df.head().iterrows():
-                print(f"  {row['layer_name']}: {row['layer_type']} - CPU:{row['cpu_cycles']} Accel:{row['accelerator_cycles']} cycles")
+                print(f"  {row['layer_name']}: {row['layer_type']} - CPU:{row['cpu_cycles']} SA:{row['sa_accelerator_cycles']} cycles")
                 
             # Show key metrics for partitioning
             print(f"\nKey metrics for partitioning:")
             print(f"  Total CPU cycles: {pbso_df['cpu_cycles'].sum():,}")
-            print(f"  Total Accelerator cycles: {pbso_df['accelerator_cycles'].sum():,}")
+            print(f"  Total SA Accelerator cycles: {pbso_df['sa_accelerator_cycles'].sum():,}")
             print(f"  Memory bound layers: {pbso_df['memory_bound'].sum()}")
             print(f"  Compute bound layers: {pbso_df['compute_bound'].sum()}")
                 
