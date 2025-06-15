@@ -182,7 +182,7 @@ class LayerProfiler:
         return layer_metrics
 
     def profile_model_per_layer(self, model_file: str, delegate_type: str = "sa_sim", 
-                               output_model_name: str = None) -> Dict:
+                               output_model_name: str = None, csv_suffix: str = "") -> Dict:
         """Profile a model and return per-layer metrics for partitioning algorithms"""
         
         # Use output_model_name for file naming, or derive from model_file
@@ -213,8 +213,12 @@ class LayerProfiler:
         print(f"DEBUG: Using binary: {binary_path}")
         print(f"DEBUG: Delegate type: {delegate_type}")
         
-        # Clean previous profiling data
-        csv_output = f"{self.outputs_dir}/sa_sim.csv"
+        # Use unique CSV output file to avoid conflicts between different modes
+        csv_filename = f"sa_sim{csv_suffix}.csv" if csv_suffix else "sa_sim.csv"
+        csv_output = f"{self.outputs_dir}/{csv_filename}"
+        print(f"DEBUG: Using CSV output: {csv_output}")
+        
+        # Clean previous profiling data for this specific CSV
         if os.path.exists(csv_output):
             os.remove(csv_output)
             
@@ -238,6 +242,11 @@ class LayerProfiler:
                 "-p", "1",
                 "--verbose", "1"
             ]
+            
+            # Add BPSO config if this is a BPSO run
+            if csv_suffix == "_bpso" and os.path.exists(f"{self.outputs_dir}/bpso_partition_config.csv"):
+                cmd.append(f"--bpso_partition_config={self.outputs_dir}/bpso_partition_config.csv")
+                print(f"DEBUG: Added BPSO config to command")
         
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
@@ -568,30 +577,31 @@ class LayerProfiler:
         return df
 
     def estimate_cpu_baseline(self, layer_info: Dict) -> Dict:
-        """Estimate CPU baseline performance for non-delegated layers"""
+        """Estimate CPU baseline performance for non-delegated layers with realistic values"""
         
         op_type = layer_info.get('op_type', 'UNKNOWN')
         
-        # CPU baseline estimates based on operation type
+        # Realistic CPU baseline estimates - much higher to match delegate SystemC data scale
+        # These values are scaled to be comparable with SystemC simulation results
         cpu_baselines = {
-            'QUANTIZE': {'cycles': 100, 'memory': 64, 'compute': 50},
-            'DEQUANTIZE': {'cycles': 120, 'memory': 64, 'compute': 60},
-            'PAD': {'cycles': 50, 'memory': 32, 'compute': 10},
-            'RELU': {'cycles': 80, 'memory': 32, 'compute': 40},
-            'RELU6': {'cycles': 90, 'memory': 32, 'compute': 45},
-            'ADD': {'cycles': 60, 'memory': 64, 'compute': 30},
-            'MUL': {'cycles': 70, 'memory': 64, 'compute': 35},
-            'RESHAPE': {'cycles': 40, 'memory': 16, 'compute': 5},
-            'POOLING': {'cycles': 200, 'memory': 128, 'compute': 100},
-            'AVERAGE_POOL_2D': {'cycles': 250, 'memory': 128, 'compute': 125},
-            'MAX_POOL_2D': {'cycles': 200, 'memory': 128, 'compute': 100},
-            'SOFTMAX': {'cycles': 500, 'memory': 256, 'compute': 400},
-            'FULLY_CONNECTED': {'cycles': 1000, 'memory': 512, 'compute': 800},
-            'DEPTHWISE_CONV_2D': {'cycles': 2000, 'memory': 1024, 'compute': 1500},
-            'CONV_2D': {'cycles': 5000, 'memory': 2048, 'compute': 4000}  # Should be delegated, but fallback
+            'QUANTIZE': {'cycles': 50000, 'memory': 2048, 'compute': 25000},
+            'DEQUANTIZE': {'cycles': 60000, 'memory': 2048, 'compute': 30000},
+            'PAD': {'cycles': 25000, 'memory': 1024, 'compute': 5000},
+            'RELU': {'cycles': 40000, 'memory': 1024, 'compute': 20000},
+            'RELU6': {'cycles': 45000, 'memory': 1024, 'compute': 22500},
+            'ADD': {'cycles': 30000, 'memory': 2048, 'compute': 15000},
+            'MUL': {'cycles': 35000, 'memory': 2048, 'compute': 17500},
+            'RESHAPE': {'cycles': 20000, 'memory': 512, 'compute': 2500},
+            'POOLING': {'cycles': 100000, 'memory': 4096, 'compute': 50000},
+            'AVERAGE_POOL_2D': {'cycles': 125000, 'memory': 4096, 'compute': 62500},
+            'MAX_POOL_2D': {'cycles': 100000, 'memory': 4096, 'compute': 50000},
+            'SOFTMAX': {'cycles': 250000, 'memory': 8192, 'compute': 200000},
+            'FULLY_CONNECTED': {'cycles': 500000, 'memory': 16384, 'compute': 400000},
+            'DEPTHWISE_CONV_2D': {'cycles': 1000000, 'memory': 32768, 'compute': 750000},
+            'CONV_2D': {'cycles': 2500000, 'memory': 65536, 'compute': 2000000}  # Expensive on CPU
         }
         
-        baseline = cpu_baselines.get(op_type, {'cycles': 100, 'memory': 64, 'compute': 50})
+        baseline = cpu_baselines.get(op_type, {'cycles': 50000, 'memory': 2048, 'compute': 25000})
         
         return {
             'read_cycles': int(baseline['cycles'] * 0.3),
@@ -609,7 +619,7 @@ class LayerProfiler:
             'compute_efficiency': 60.0,  # CPU efficiency
             'memory_efficiency': 80.0,   # CPU memory efficiency
             'gmacs_per_cycle': (baseline['compute'] // 10) / max(1, baseline['cycles']),
-            'execution_cost': int(baseline['cycles'] * 1.5),  # CPU is less efficient
+            'execution_cost': int(baseline['cycles'] * 2.0),  # CPU is less efficient, higher weight
             'memory_cost': baseline['memory'],
             'communication_cost': int(baseline['cycles'] * 0.05)
         }
