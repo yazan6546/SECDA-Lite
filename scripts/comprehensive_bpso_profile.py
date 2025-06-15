@@ -1132,7 +1132,7 @@ def main():
             all_results[model] = model_results
         
         # Generate comprehensive CSV report
-        profiler.generate_comprehensive_csv(all_results, args.output_csv)
+        profiler.generate_csv_summary(all_results, args.output_csv)
     
     print(f"\\n=== Summary ===")
     print(f"Results saved to: {args.output_csv}")
