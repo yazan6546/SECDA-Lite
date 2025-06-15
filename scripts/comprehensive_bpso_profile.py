@@ -35,9 +35,8 @@ class BPSOWorkflowProfiler:
             "mobilenetv2.tflite"
         ]
         
-        # Binary paths
+        # Binary paths - use SA sim delegate for all tests (with/without delegation flag)
         self.sa_sim_delegate = "bazel-bin/tensorflow/lite/delegates/utils/sa_sim_delegate/label_image_plus_sa_sim_delegate"
-        self.baseline_binary = "bazel-bin/tensorflow/lite/examples/label_image/label_image"
         
         # Test image
         self.test_image = f"{self.test_images_dir}/grace_hopper.bmp"
@@ -195,8 +194,7 @@ class BPSOWorkflowProfiler:
             "python3", "scripts/per_layer_profiling.py",
             "--model", f"models/{model_name}",
             "--output_dir", "outputs",
-            "--model_name", model_name.replace('.tflite', '_baseline'),
-            "--baseline_only"  # New flag for CPU-only profiling
+            "--model_name", model_name.replace('.tflite', '_baseline')
         ]
         
         profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
@@ -204,68 +202,63 @@ class BPSOWorkflowProfiler:
         if profile_result.returncode != 0:
             print(f"  Warning: Baseline profiling failed: {profile_result.stderr}")
         
-        # Load JSON profile if available
+    def run_baseline_profiling(self, model_name, runs=1):
+        """Run baseline CPU-only profiling using JSON metrics only"""
+        print(f"\\n=== Running BASELINE (CPU-only) profiling for {model_name} ===")
+        
+        # Generate baseline per-layer profile 
+        print("  Generating baseline per-layer JSON profile...")
+        profile_cmd = [
+            "python3", "scripts/per_layer_profiling.py",
+            "--model", f"models/{model_name}",
+            "--output_dir", "outputs",
+            "--model_name", model_name.replace('.tflite', '_baseline')
+        ]
+        
+        profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                       universal_newlines=True, cwd=self.workspace_dir)
+        if profile_result.returncode != 0:
+            print(f"  Error: Baseline profiling failed: {profile_result.stderr}")
+            return {}
+        
+        # Load and aggregate JSON metrics
         json_file = f"{self.workspace_dir}/results/{model_name.replace('.tflite', '_baseline')}_partitioning_profile.json"
-        json_metrics = {}
         json_data = self.load_json_profile(json_file)
-        if json_data:
-            json_metrics = self.aggregate_json_metrics(json_data)
-            print(f"  Loaded baseline JSON metrics: {json_metrics.get('total_layers', 0)} layers")
+        if not json_data:
+            print(f"  Error: Could not load JSON profile: {json_file}")
+            return {}
+        
+        json_metrics = self.aggregate_json_metrics(json_data)
+        print(f"  ✓ Loaded baseline metrics: {json_metrics.get('total_layers', 0)} layers, all CPU")
         
         results = {
             "execution_mode": "baseline_cpu",
             "model": model_name,
-            "runs": [],
-            "avg_inference_time_ms": 0,
-            "std_inference_time_ms": 0,
+            "json_data": json_data,
             "json_metrics": json_metrics,
-            "total_energy_cost": json_metrics.get('total_energy_cost', 0),
-            "total_execution_cost": json_metrics.get('total_execution_cost', 0),
-            "total_communication_cost": json_metrics.get('total_communication_cost', 0),
-            "total_cycles": json_metrics.get('total_cycles', 0)
+            "summary": {
+                "total_layers": json_metrics.get('total_layers', 0),
+                "delegated_layers": 0,  # Baseline has no delegation
+                "total_cycles": json_metrics.get('total_cycles', 0),
+                "total_energy_cost": json_metrics.get('total_energy_cost', 0),
+                "total_execution_cost": json_metrics.get('total_execution_cost', 0),
+                "total_communication_cost": json_metrics.get('total_communication_cost', 0),
+                "total_compute_cost": json_metrics.get('total_compute_cost', 0),
+                "total_memory_cost": json_metrics.get('total_memory_cost', 0),
+                "compute_efficiency_avg": json_metrics.get('compute_efficiency_avg', 0),
+                "memory_efficiency_avg": json_metrics.get('memory_efficiency_avg', 0)
+            }
         }
         
-        # Run baseline TFLite without any delegation for timing
-        for run in range(runs):
-            print(f"  Baseline run {run + 1}/{runs}")
-            
-            cmd = [
-                self.baseline_binary,
-                f"--image={self.test_image}",
-                f"--model={self.models_dir}/{model_name}",
-                "--verbose=1"
-            ]
-            
-            start_time = time.time()
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
-                                   universal_newlines=True, cwd=self.workspace_dir)
-            end_time = time.time()
-            
-            wall_time = (end_time - start_time) * 1000
-            inference_time = self.extract_inference_time(result.stdout)
-            
-            run_data = {
-                "run": run + 1,
-                "inference_time_ms": inference_time,
-                "wall_time_ms": wall_time,
-                "returncode": result.returncode
-            }
-            
-            results["runs"].append(run_data)
-        
-        # Calculate statistics
-        times = [r["inference_time_ms"] for r in results["runs"] if r["inference_time_ms"] > 0]
-        if times:
-            results["avg_inference_time_ms"] = np.mean(times)
-            results["std_inference_time_ms"] = np.std(times)
+        return results
         
         return results
 
-    def run_default_delegation_profiling(self, model_name, runs=3):
-        """Run default SA sim delegation (all CONV2D layers) with per-layer JSON profile"""
+    def run_default_delegation_profiling(self, model_name, runs=1):
+        """Run default SA sim delegation using JSON metrics only"""
         print(f"\\n=== Running DEFAULT DELEGATION profiling for {model_name} ===")
         
-        # Generate default delegation per-layer profile first
+        # Generate default delegation per-layer profile
         print("  Generating default delegation per-layer profile...")
         profile_cmd = [
             "python3", "scripts/per_layer_profiling.py",
@@ -277,73 +270,39 @@ class BPSOWorkflowProfiler:
         profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
                                        universal_newlines=True, cwd=self.workspace_dir)
         if profile_result.returncode != 0:
-            print(f"  Warning: Default profiling failed: {profile_result.stderr}")
+            print(f"  Error: Default profiling failed: {profile_result.stderr}")
+            return {}
         
-        # Load JSON profile if available
+        # Load and aggregate JSON metrics
         json_file = f"{self.workspace_dir}/results/{model_name.replace('.tflite', '_default')}_partitioning_profile.json"
-        json_metrics = {}
         json_data = self.load_json_profile(json_file)
-        if json_data:
-            json_metrics = self.aggregate_json_metrics(json_data)
-            print(f"  Loaded default JSON metrics: {json_metrics.get('total_layers', 0)} layers, {json_metrics.get('delegated_layers', 0)} delegated")
+        if not json_data:
+            print(f"  Error: Could not load JSON profile: {json_file}")
+            return {}
+        
+        json_metrics = self.aggregate_json_metrics(json_data)
+        print(f"  ✓ Loaded default metrics: {json_metrics.get('total_layers', 0)} layers, {json_metrics.get('delegated_layers', 0)} delegated")
         
         results = {
             "execution_mode": "default_delegation",
             "model": model_name,
-            "runs": [],
-            "avg_inference_time_ms": 0,
-            "std_inference_time_ms": 0,
-            "delegation_info": {},
+            "json_data": json_data,
             "json_metrics": json_metrics,
-            "total_energy_cost": json_metrics.get('total_energy_cost', 0),
-            "total_execution_cost": json_metrics.get('total_execution_cost', 0),
-            "total_communication_cost": json_metrics.get('total_communication_cost', 0),
-            "total_cycles": json_metrics.get('total_cycles', 0),
-            "delegated_metrics": json_metrics.get('by_delegation', {}).get('delegated', {}),
-            "cpu_metrics": json_metrics.get('by_delegation', {}).get('not_delegated', {})
-        }
-        
-        for run in range(runs):
-            print(f"  Default delegation run {run + 1}/{runs}")
-            
-            cmd = [
-                self.sa_sim_delegate,
-                f"--image={self.test_image}",
-                f"--tflite_model={self.models_dir}/{model_name}",
-                "--use_sa_sim_delegate=true",
-                "--verbose=1"
-            ]
-            
-            start_time = time.time()
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
-                                   universal_newlines=True, cwd=self.workspace_dir)
-            end_time = time.time()
-            
-            wall_time = (end_time - start_time) * 1000
-            inference_time = self.extract_inference_time(result.stdout)
-            delegation_info = self.extract_delegate_info(result.stdout)
-            
-            run_data = {
-                "run": run + 1,
-                "inference_time_ms": inference_time,
-                "wall_time_ms": wall_time,
-                "delegation_info": delegation_info,
-                "returncode": result.returncode
+            "summary": {
+                "total_layers": json_metrics.get('total_layers', 0),
+                "delegated_layers": json_metrics.get('delegated_layers', 0),
+                "total_cycles": json_metrics.get('total_cycles', 0),
+                "total_energy_cost": json_metrics.get('total_energy_cost', 0),
+                "total_execution_cost": json_metrics.get('total_execution_cost', 0),
+                "total_communication_cost": json_metrics.get('total_communication_cost', 0),
+                "total_compute_cost": json_metrics.get('total_compute_cost', 0),
+                "total_memory_cost": json_metrics.get('total_memory_cost', 0),
+                "compute_efficiency_avg": json_metrics.get('compute_efficiency_avg', 0),
+                "memory_efficiency_avg": json_metrics.get('memory_efficiency_avg', 0),
+                "delegated_metrics": json_metrics.get('by_delegation', {}).get('delegated', {}),
+                "cpu_metrics": json_metrics.get('by_delegation', {}).get('not_delegated', {})
             }
-            
-            results["runs"].append(run_data)
-        
-        # Calculate statistics
-        times = [r["inference_time_ms"] for r in results["runs"] if r["inference_time_ms"] > 0]
-        if times:
-            results["avg_inference_time_ms"] = np.mean(times)
-            results["std_inference_time_ms"] = np.std(times)
-            
-            # Get delegation info from first successful run
-            for run_data in results["runs"]:
-                if run_data["delegation_info"] and run_data["delegation_info"]["total_nodes"] > 0:
-                    results["delegation_info"] = run_data["delegation_info"]
-                    break
+        }
         
         return results
 
@@ -562,44 +521,138 @@ class BPSOWorkflowProfiler:
         
         return report
 
-    def generate_csv_summary(self, report, csv_file):
-        """Generate CSV summary with JSON metrics for easy analysis"""
-        csv_data = []
+    def generate_csv_summary(self, all_results, csv_file):
+        """Generate comprehensive CSV summary with aggregated JSON metrics"""
+        print(f"\\n=== Generating Comprehensive CSV Summary: {csv_file} ===")
         
-        for model, summary in report["summary_comparison"].items():
-            for mode in ["baseline_cpu", "default_delegation", "bpso_optimized"]:
-                if summary[mode]:
-                    mode_data = summary[mode]
-                    json_metrics = mode_data.get("json_metrics", {})
+        # Prepare CSV headers
+        headers = [
+            'model', 'execution_mode', 'total_layers', 'delegated_layers',
+            'total_cycles', 'total_energy_cost', 'total_execution_cost', 
+            'total_communication_cost', 'total_compute_cost', 'total_memory_cost',
+            'compute_efficiency_avg', 'memory_efficiency_avg',
+            'delegated_layer_cycles', 'delegated_layer_energy', 'delegated_layer_execution_cost',
+            'cpu_layer_cycles', 'cpu_layer_energy', 'cpu_layer_execution_cost',
+            'performance_summary', 'partitioning_summary'
+        ]
+        
+        csv_rows = []
+        
+        for model_name, model_results in all_results.items():
+            for mode_name, mode_result in model_results.items():
+                if not mode_result or 'summary' not in mode_result:
+                    continue
                     
-                    row = {
-                        "model": model,
-                        "execution_mode": mode,
-                        "avg_inference_time_ms": mode_data["avg_inference_time_ms"],
-                        "total_layers": json_metrics.get("total_layers", 0),
-                        "delegated_layers": json_metrics.get("delegated_layers", 0),
-                        "total_cycles": json_metrics.get("total_cycles", 0),
-                        "total_energy_cost": json_metrics.get("total_energy_cost", 0),
-                        "total_execution_cost": json_metrics.get("total_execution_cost", 0),
-                        "total_memory_cost": json_metrics.get("total_memory_cost", 0),
-                        "total_communication_cost": json_metrics.get("total_communication_cost", 0),
-                        "total_compute_cost": json_metrics.get("total_compute_cost", 0),
-                        "total_gmacs": json_metrics.get("total_gmacs", 0),
-                        "compute_efficiency_avg": json_metrics.get("compute_efficiency_avg", 0),
-                        "memory_efficiency_avg": json_metrics.get("memory_efficiency_avg", 0),
-                        "delegated_nodes": mode_data["delegation_info"].get("delegated_nodes", 0),
-                        "total_nodes": mode_data["delegation_info"].get("total_nodes", 0),
-                        "delegation_ratio": mode_data["delegation_info"].get("delegation_ratio", 0),
-                        "delegated_cycles": json_metrics.get("by_delegation", {}).get("delegated", {}).get("total_cycles", 0),
-                        "delegated_energy": json_metrics.get("by_delegation", {}).get("delegated", {}).get("total_energy", 0),
-                        "cpu_cycles": json_metrics.get("by_delegation", {}).get("not_delegated", {}).get("total_cycles", 0),
-                        "cpu_energy": json_metrics.get("by_delegation", {}).get("not_delegated", {}).get("total_energy", 0)
-                    }
-                    csv_data.append(row)
+                summary = mode_result['summary']
+                json_metrics = mode_result.get('json_metrics', {})
+                
+                # Basic metrics
+                row = {
+                    'model': model_name,
+                    'execution_mode': mode_name,
+                    'total_layers': summary.get('total_layers', 0),
+                    'delegated_layers': summary.get('delegated_layers', 0),
+                    'total_cycles': summary.get('total_cycles', 0),
+                    'total_energy_cost': summary.get('total_energy_cost', 0),
+                    'total_execution_cost': summary.get('total_execution_cost', 0),
+                    'total_communication_cost': summary.get('total_communication_cost', 0),
+                    'total_compute_cost': summary.get('total_compute_cost', 0),
+                    'total_memory_cost': summary.get('total_memory_cost', 0),
+                    'compute_efficiency_avg': f"{summary.get('compute_efficiency_avg', 0):.2f}",
+                    'memory_efficiency_avg': f"{summary.get('memory_efficiency_avg', 0):.2f}"
+                }
+                
+                # Delegation breakdown
+                delegated_metrics = summary.get('delegated_metrics', {})
+                cpu_metrics = summary.get('cpu_metrics', {})
+                
+                row.update({
+                    'delegated_layer_cycles': delegated_metrics.get('total_cycles', 0),
+                    'delegated_layer_energy': delegated_metrics.get('total_energy', 0),
+                    'delegated_layer_execution_cost': delegated_metrics.get('total_execution_cost', 0),
+                    'cpu_layer_cycles': cpu_metrics.get('total_cycles', 0),
+                    'cpu_layer_energy': cpu_metrics.get('total_energy', 0),
+                    'cpu_layer_execution_cost': cpu_metrics.get('total_execution_cost', 0)
+                })
+                
+                # Generate performance and partitioning summaries from raw JSON
+                json_data = mode_result.get('json_data', {})
+                if json_data and 'layers' in json_data:
+                    perf_summary = self.summarize_performance_metrics(json_data)
+                    part_summary = self.summarize_partitioning_metrics(json_data)
+                    
+                    row.update({
+                        'performance_summary': json.dumps(perf_summary),
+                        'partitioning_summary': json.dumps(part_summary)
+                    })
+                else:
+                    row.update({
+                        'performance_summary': '{}',
+                        'partitioning_summary': '{}'
+                    })
+                
+                csv_rows.append(row)
         
-        df = pd.DataFrame(csv_data)
-        df.to_csv(csv_file, index=False)
-        print(f"Enhanced CSV summary with JSON metrics saved: {csv_file}")
+        # Write CSV
+        with open(csv_file, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(csv_rows)
+        
+        print(f"  ✓ Comprehensive CSV written: {len(csv_rows)} rows")
+        print(f"  ✓ File saved: {csv_file}")
+        return csv_file
+
+    def summarize_performance_metrics(self, json_data):
+        """Summarize performance_metrics from JSON data"""
+        total_read_cycles = 0
+        total_process_cycles = 0
+        total_idle_cycles = 0
+        total_gmacs = 0
+        total_effective_cycles = 0
+        
+        for layer_key, layer_data in json_data.get('layers', {}).items():
+            if isinstance(layer_data, dict):
+                perf = layer_data.get('performance_metrics', {})
+                total_read_cycles += perf.get('read_cycles', 0)
+                total_process_cycles += perf.get('process_cycles', 0)
+                total_idle_cycles += perf.get('idle_cycles', 0)
+                total_gmacs += perf.get('total_gmacs', 0)
+                total_effective_cycles += perf.get('effective_cycles', 0)
+        
+        total_cycles = total_read_cycles + total_process_cycles + total_idle_cycles
+        return {
+            'total_read_cycles': total_read_cycles,
+            'total_process_cycles': total_process_cycles,
+            'total_idle_cycles': total_idle_cycles,
+            'total_gmacs': total_gmacs,
+            'total_effective_cycles': total_effective_cycles,
+            'utilization_ratio': round(total_effective_cycles / max(total_cycles, 1), 4)
+        }
+
+    def summarize_partitioning_metrics(self, json_data):
+        """Summarize partitioning_metrics from JSON data"""
+        compute_intensive_layers = 0
+        memory_intensive_layers = 0
+        total_buffer_requirement = 0
+        total_data_movement_cycles = 0
+        
+        for layer_key, layer_data in json_data.get('layers', {}).items():
+            if isinstance(layer_data, dict):
+                part = layer_data.get('partitioning_metrics', {})
+                if part.get('is_compute_intensive', False):
+                    compute_intensive_layers += 1
+                if part.get('is_memory_intensive', False):
+                    memory_intensive_layers += 1
+                total_buffer_requirement += part.get('buffer_requirement', 0)
+                total_data_movement_cycles += part.get('data_movement_cycles', 0)
+        
+        return {
+            'compute_intensive_layers': compute_intensive_layers,
+            'memory_intensive_layers': memory_intensive_layers,
+            'total_buffer_requirement': total_buffer_requirement,
+            'total_data_movement_cycles': total_data_movement_cycles
+        }
 
     def generate_recommendations(self, report):
         """Generate optimization recommendations"""
