@@ -47,16 +47,15 @@ bool BPSOPartitionConfig::ParseCSVConfig(const std::string& file_path) {
       tokens.push_back(item);
     }
     
-    if (tokens.size() < 4) continue;  // Skip malformed lines
+    if (tokens.size() < 3) continue;  // Skip malformed lines (need at least layer_id, layer_type, partition_decision)
     
     LayerPartition partition;
     try {
       partition.layer_id = std::stoi(tokens[0]);
-      partition.layer_name = tokens[1];
-      partition.operation_type = tokens[2];
+      partition.operation_type = tokens[1];  // layer_type column
       
-      // Parse processing unit assignment
-      std::string unit_str = tokens[3];
+      // Parse processing unit assignment from partition_decision column
+      std::string unit_str = tokens[2];  // partition_decision column
       if (unit_str == "SA" || unit_str == "1" || unit_str == "SA_ACCELERATOR") {
         partition.assigned_unit = ProcessingUnit::SA_ACCELERATOR;
         partition.force_delegation = true;
@@ -66,13 +65,13 @@ bool BPSOPartitionConfig::ParseCSVConfig(const std::string& file_path) {
       }
       
       // Optional: execution cost (if available)
-      if (tokens.size() > 4) {
-        partition.execution_cost = std::stod(tokens[4]);
+      if (tokens.size() > 3) {
+        partition.execution_cost = std::stod(tokens[3]);  // cpu_cycles column
       }
       
-      // Optional: communication cost (if available)
-      if (tokens.size() > 5) {
-        partition.communication_cost = std::stod(tokens[5]);
+      // Optional: communication cost (if available) 
+      if (tokens.size() > 4) {
+        partition.communication_cost = std::stod(tokens[5]);  // communication_cost column
       }
       
       layer_partitions_[partition.layer_id] = partition;
