@@ -22,7 +22,7 @@ import pandas as pd
 from pathlib import Path
 
 class LayerProfiler:
-    def __init__(self, workspace_dir: str = "/workspaces/SECDA-Lite"):
+    def __init__(self, workspace_dir: str = "/workspaces/tensorflow/SECDA-Lite"):
         self.workspace_dir = workspace_dir
         self.models_dir = f"{workspace_dir}/models"
         self.outputs_dir = f"{workspace_dir}/outputs"
@@ -372,49 +372,42 @@ class LayerProfiler:
         print(f"Comparative analysis saved to: {comparison_file}")
 
     def extract_pbso_dag_data(self, profile_data: Dict) -> pd.DataFrame:
-        """Extract per-layer profiling data in format suitable for PBSO+DAG optimization"""
+        """Extract per-layer profiling data for PBSO+DAG optimization with static CPU vs SA accelerator partitioning"""
         
         dag_data = []
         
         for layer_name, layer_info in profile_data['layers'].items():
             metrics = layer_info['partitioning_metrics']
             
-            # Extract DAG node data for PBSO optimization
+            # Static partitioning data for PBSO optimization (CPU vs SA accelerator only)
             layer_data = {
                 'layer_id': layer_info['layer_id'],
                 'layer_name': layer_name,
                 'layer_type': metrics['layer_type'],
                 
-                # Execution costs per processing unit (clock cycles)
-                'cpu_cycles': metrics['total_cycles'],  # Baseline CPU cycles
-                'systemc_delegate_cycles': metrics.get('accelerator_cycles', int(metrics['total_cycles'] * 0.25)),  # SystemC delegate speedup
+                # Static execution costs (clock cycles only - no timing)
+                'cpu_cycles': metrics['total_cycles'],  # CPU baseline cycles
+                'sa_accelerator_cycles': metrics.get('accelerator_cycles', int(metrics['total_cycles'] * 0.3)),  # SA accelerator cycles
                 
-                # Memory requirements (KB)
-                'input_memory_kb': metrics.get('input_memory_size', 0) / 1024,
-                'output_memory_kb': metrics.get('output_memory_size', 0) / 1024,
-                'weight_memory_kb': metrics.get('weight_memory_size', 0) / 1024,
+                # Memory requirements for static allocation (bytes)
+                'input_tensor_size': metrics.get('input_memory_size', 1024),
+                'output_tensor_size': metrics.get('output_memory_size', 1024),
+                'weight_size': metrics.get('weight_memory_size', 0),
                 
-                # Tensor sizes for communication cost calculation (bytes)
-                'input_tensor_size': metrics.get('input_memory_size', 0),
-                'output_tensor_size': metrics.get('output_memory_size', 0),
+                # Communication cost between layers (for static cut points)
+                'transfer_overhead_cycles': 100,  # Fixed transfer cost between CPU and SA accelerator
                 
-                # Performance characteristics
-                'memory_reads': metrics.get('memory_access_cycles', 0) // 2,
-                'memory_writes': metrics.get('memory_access_cycles', 0) // 2,
-                'compute_operations': metrics.get('compute_cycles', 0),
-                'energy_mj': metrics.get('energy_cost', 0),
-                'cache_hits': metrics.get('cache_hits', 0),
-                'cache_misses': metrics.get('cache_misses', 0),
+                # Layer characteristics for static partitioning decisions
+                'compute_intensity': metrics.get('compute_cycles', 1000),  # FLOPS equivalent
+                'memory_accesses': metrics.get('memory_access_cycles', 500),
                 
-                # Optimization hints for PBSO
-                'parallelizable': metrics['layer_type'] in ['CONV2D', 'DEPTHWISE_CONV2D', 'FULLY_CONNECTED'],
-                'memory_bound': metrics.get('memory_access_cycles', 0) > metrics.get('compute_cycles', 1),
-                'compute_bound': metrics.get('compute_cycles', 0) > metrics.get('memory_access_cycles', 1),
+                # SA accelerator suitability (static analysis)
+                'sa_suitable': metrics['layer_type'] in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED'],
+                'cpu_preferred': metrics['layer_type'] in ['POOLING', 'RELU', 'SOFTMAX', 'RESHAPE'],
                 
-                # Additional profiling metrics
-                'execution_time_us': metrics.get('execution_time_us', 0),
-                'power_watts': metrics.get('power_cost', 0),
-                'throughput_ops_per_sec': metrics.get('throughput', 0)
+                # Static energy costs
+                'cpu_energy_nj': metrics.get('energy_cost', 100),
+                'sa_energy_nj': metrics.get('energy_cost', 50) if metrics['layer_type'] in ['CONV_2D', 'DEPTHWISE_CONV_2D'] else 100,
             }
             
             dag_data.append(layer_data)

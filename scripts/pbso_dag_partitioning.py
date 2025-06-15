@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-PBSO (Population-Based Swarm Optimization) with DAG modeling for DNN partitioning
+PBSO (Population-Based Swarm Optimization) with DAG modeling for static DNN partiticlass StaticStaticPBSOOptimizer:
+    """Population-Based Swarm Optimization for static CPU vs SA accelerator partitioning"""
+    
+    def __init__(self, dag_model: StaticStaticDNNGraphModel, swarm_size: int = 50):g
+Static CPU vs SA (Systolic Array) accelerator partitioning only
 Requires per-layer profiling data for accurate optimization
 """
 
@@ -13,40 +17,39 @@ import json
 
 @dataclass
 class LayerNode:
-    """DAG node representing a neural network layer"""
+    """DAG node representing a neural network layer for static partitioning"""
     layer_id: int
     layer_name: str
     layer_type: str
     
-    # Execution costs per processing unit
+    # Static execution costs (clock cycles only)
     cpu_cycles: int
-    systemc_delegate_cycles: int
+    sa_accelerator_cycles: int  # SA accelerator cycles
     
-    # Memory requirements
-    input_memory: int
-    output_memory: int
-    weight_memory: int
-    
-    # Communication costs
+    # Memory requirements for static allocation
     input_tensor_size: int
     output_tensor_size: int
+    weight_size: int
     
-    # Dependencies
+    # Static communication costs
+    transfer_overhead_cycles: int  # Fixed transfer cost between CPU and SA
+    
+    # Dependencies (static DAG structure)
     predecessors: List[int]
     successors: List[int]
     
-    # Runtime characteristics
-    parallelizable: bool
-    memory_bound: bool
-    compute_bound: bool
+    # Static partitioning characteristics
+    sa_suitable: bool      # Layer type suitable for SA accelerator
+    cpu_preferred: bool    # Layer type preferred for CPU
+    compute_intensity: int # FLOPS equivalent for static analysis
 
-class DNNGraphModel:
-    """DAG representation of neural network for partitioning optimization"""
+class StaticDNNGraphModel:
+    """Static DAG representation of neural network for CPU vs SA accelerator partitioning"""
     
     def __init__(self):
         self.graph = nx.DiGraph()
         self.layers: Dict[int, LayerNode] = {}
-        self.processing_units = ['cpu', 'systemc_delegate']
+        self.processing_units = ['cpu', 'sa_accelerator']  # Only CPU and SA accelerator
         
     def add_layer(self, layer: LayerNode):
         """Add layer node to DAG"""
@@ -65,23 +68,22 @@ class DNNGraphModel:
             return list(nx.topological_sort(self.graph))
     
     def calculate_communication_cost(self, partition: Dict[int, str]) -> int:
-        """Calculate total communication cost for a partition"""
+        """Calculate total communication cost for static CPU vs SA accelerator partition"""
         total_cost = 0
         for edge in self.graph.edges(data=True):
             from_node, to_node, data = edge
             if partition[from_node] != partition[to_node]:
-                # Different processing units - add transfer cost
-                transfer_cost = data['data_size'] * self.get_transfer_cost_per_byte(
-                    partition[from_node], partition[to_node]
-                )
+                # Different processing units - add static transfer cost
+                layer = self.layers[from_node]
+                transfer_cost = layer.transfer_overhead_cycles  # Fixed SA accelerator transfer cost
                 total_cost += transfer_cost
         return total_cost
     
     def get_transfer_cost_per_byte(self, from_unit: str, to_unit: str) -> float:
-        """Get transfer cost between CPU and SystemC delegate"""
+        """Get static transfer cost between CPU and SA accelerator"""
         transfer_costs = {
-            ('cpu', 'systemc_delegate'): 0.2,  # CPU to SystemC delegate
-            ('systemc_delegate', 'cpu'): 0.2,  # SystemC delegate to CPU
+            ('cpu', 'sa_accelerator'): 100,  # CPU to SA accelerator (cycles)
+            ('sa_accelerator', 'cpu'): 100,  # SA accelerator to CPU (cycles)
         }
         return transfer_costs.get((from_unit, to_unit), 0.0)
 
@@ -108,10 +110,10 @@ class PBSOParticle:
         # Clip to valid processing unit range
         self.position = np.clip(np.round(self.position), 0, num_processing_units - 1).astype(int)
 
-class PBSOOptimizer:
+class StaticPBSOOptimizer:
     """Population-Based Swarm Optimization for DAG partitioning"""
     
-    def __init__(self, dag_model: DNNGraphModel, swarm_size: int = 50):
+    def __init__(self, dag_model: StaticDNNGraphModel, swarm_size: int = 50):
         self.dag_model = dag_model
         self.swarm_size = swarm_size
         self.num_layers = len(dag_model.layers)
@@ -226,9 +228,9 @@ class PBSOOptimizer:
         
         return self.global_best_position, self.global_best_fitness
 
-def load_per_layer_profiling_data(csv_file: str) -> DNNGraphModel:
+def load_per_layer_profiling_data(csv_file: str) -> StaticDNNGraphModel:
     """Load per-layer profiling data and create DAG model"""
-    dag_model = DNNGraphModel()
+    dag_model = StaticDNNGraphModel()
     
     # Load profiling data
     df = pd.read_csv(csv_file)
@@ -264,14 +266,14 @@ def load_per_layer_profiling_data(csv_file: str) -> DNNGraphModel:
     
     return dag_model
 
-def load_profiling_data_to_dag(csv_file: str) -> DNNGraphModel:
+def load_profiling_data_to_dag(csv_file: str) -> StaticDNNGraphModel:
     """Load per-layer profiling data and create DAG model"""
     
     # Read CSV data
     df = pd.read_csv(csv_file)
     
     # Create DAG model
-    dag_model = DNNGraphModel()
+    dag_model = StaticDNNGraphModel()
     
     # Add layers to the model
     for _, row in df.iterrows():
@@ -318,7 +320,7 @@ def run_pbso_partitioning(profiling_csv: str) -> Dict:
     print(f"Critical path: {dag_model.get_critical_path()}")
     
     print("Running PBSO optimization...")
-    optimizer = PBSOOptimizer(dag_model, swarm_size=50)
+    optimizer = StaticPBSOOptimizer(dag_model, swarm_size=50)
     best_partition, best_fitness = optimizer.optimize()
     
     # Convert result to readable format
