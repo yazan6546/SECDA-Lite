@@ -113,17 +113,20 @@ class LayerProfiler:
             for idx, row in df.iterrows():
                 layer_name = f"layer_{idx}"
                 
-                # Extract cycle counts and costs per layer
+                # Extract cycle counts and costs per layer using actual CSV columns
                 layer_metrics[layer_name] = {
-                    'clock_cycles': row.get('ClockCycles', 0),
-                    'process_cycles': row.get('ProcessCycles', 0),
-                    'memory_read_cycles': row.get('MemoryReadCycles', 0),
-                    'memory_write_cycles': row.get('MemoryWriteCycles', 0),
-                    'compute_cycles': row.get('ComputeCycles', 0),
-                    'data_movement_cycles': row.get('DataMovementCycles', 0),
-                    'buffer_usage': row.get('BufferUsage', 0),
-                    'power_cost': row.get('PowerCost', 0),
-                    'energy_cost': row.get('EnergyCost', 0)
+                    'read_cycles': row.get('read_cycles', 0),
+                    'process_cycles': row.get('process_cycles', 0),
+                    'idle_cycles': row.get('idle', 0),
+                    'gemmw_cycles': row.get('gemmw', 0),
+                    'gemm_cycles': row.get('gemm', 0),
+                    'wstall_cycles': row.get('wstall', 0),
+                    'inputbuf_power': row.get('inputbuf_p', 0),
+                    'weightbuf_power': row.get('weightbuf_p', 0),
+                    'gmacs': row.get('gmacs', 0),
+                    'gouts': row.get('gouts', 0),
+                    'total_cycles': row.get('read_cycles', 0) + row.get('process_cycles', 0),
+                    'compute_efficiency': row.get('gmacs', 0) / max(row.get('process_cycles', 1), 1)
                 }
                 
         except Exception as e:
