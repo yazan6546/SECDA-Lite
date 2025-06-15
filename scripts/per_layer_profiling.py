@@ -67,32 +67,34 @@ class LayerProfiler:
             
             layer_idx = 0
             for line in lines:
-                if 'Node' in line and 'inputs:' in line:
-                    # Extract layer information from verbose output
-                    layer_info = {
-                        'layer_idx': layer_idx,
-                        'layer_name': f"layer_{layer_idx}",
-                        'layer_type': 'UNKNOWN',
-                        'input_shape': None,
-                        'output_shape': None,
-                        'params': 0
-                    }
-                    
-                    # Try to extract operation type
-                    if 'CONV_2D' in line:
-                        layer_info['layer_type'] = 'CONV2D'
-                    elif 'DEPTHWISE_CONV_2D' in line:
-                        layer_info['layer_type'] = 'DEPTHWISE_CONV2D'
-                    elif 'AVERAGE_POOL_2D' in line:
-                        layer_info['layer_type'] = 'AVERAGE_POOL2D'
-                    elif 'MAX_POOL_2D' in line:
-                        layer_info['layer_type'] = 'MAX_POOL2D'
-                    elif 'FULLY_CONNECTED' in line:
-                        layer_info['layer_type'] = 'FULLY_CONNECTED'
-                    
-                    layers.append(layer_info)
-                    layer_idx += 1
-                    
+                # Look for pattern: "Node   X Operator Builtin Code Y OPERATION_NAME"
+                if line.strip().startswith('Node') and 'Operator Builtin Code' in line:
+                    parts = line.strip().split()
+                    if len(parts) >= 6:
+                        try:
+                            node_id = int(parts[1])
+                            builtin_code = int(parts[5])
+                            op_name = parts[6] if len(parts) > 6 else 'UNKNOWN'
+                            is_delegated = '(delegated)' in line
+                            
+                            layer_info = {
+                                'layer_idx': node_id,
+                                'layer_name': f"layer_{node_id}",
+                                'layer_type': op_name,
+                                'op_type': op_name,
+                                'builtin_code': builtin_code,
+                                'is_delegated': is_delegated,
+                                'input_shape': None,
+                                'output_shape': None,
+                                'params': 0
+                            }
+                            
+                            layers.append(layer_info)
+                            
+                        except (ValueError, IndexError):
+                            continue
+                            
+            print(f"DEBUG: Extracted {len(layers)} layers from verbose output")
             return layers
             
         except Exception as e:
