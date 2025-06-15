@@ -2,6 +2,7 @@
 
 #include "tensorflow/lite/delegates/utils/sa_sim_delegate/sa_sim_delegate.h"
 #include "tensorflow/lite/delegates/utils/simple_delegate.h"
+#include "tensorflow/lite/delegates/utils/sa_sim_delegate/bpso_partition_config.h"
 
 #include <utility>
 #include "tensorflow/lite/delegates/utils/sa_sim_delegate/accelerator/driver/gemm_driver.h"
@@ -520,6 +521,50 @@ class SASimDelegate : public SimpleDelegateInterface {
   bool IsNodeSupportedByDelegate(const TfLiteRegistration* registration,
                                  const TfLiteNode* node,
                                  TfLiteContext* context) const override {
+    // Get current layer/node index for BPSO decision
+    static int current_layer_id = 0;
+    current_layer_id++;
+    
+    // Check if BPSO partition control is enabled
+    if (delegates::sa_sim::g_bpso_partition_config != nullptr && 
+        delegates::sa_sim::g_bpso_partition_config->IsBPSOControlEnabled()) {
+      
+      // Get operation type string
+      std::string op_type = "UNKNOWN";
+      if (registration->builtin_code == kTfLiteBuiltinConv2d) {
+        op_type = "CONV_2D";
+      } else if (registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
+        op_type = "DEPTHWISE_CONV_2D";
+      } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+        op_type = "FULLY_CONNECTED";
+      }
+      
+      // Use BPSO decision instead of default logic
+      bool bpso_decision = delegates::sa_sim::g_bpso_partition_config->ShouldDelegateLayer(
+          current_layer_id, op_type);
+      
+      if (bpso_decision) {
+        // BPSO says delegate this layer - still need to check basic compatibility
+        if (kTfLiteBuiltinConv2d != registration->builtin_code) return false;
+        
+        // Check tensor types
+        if (node->inputs->size != 3) return false;
+        for (int i = 0; i < 2; ++i) {
+          auto& tensor = context->tensors[node->inputs->data[i]];
+          if (tensor.type != kTfLiteInt8) return false;
+        }
+        auto& tensor = context->tensors[node->inputs->data[2]];
+        if (tensor.type != kTfLiteInt32) return false;
+        
+        dparams.delegated_nodes++;
+        return true;
+      } else {
+        // BPSO says run on CPU - don't delegate
+        return false;
+      }
+    }
+    
+    // Fallback to original logic when BPSO is disabled
     // Only supports CONV2D op
     if (kTfLiteBuiltinConv2d != registration->builtin_code) return false;
 

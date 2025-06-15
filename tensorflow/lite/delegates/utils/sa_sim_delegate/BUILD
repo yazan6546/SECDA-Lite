@@ -9,6 +9,17 @@ package(
 )
 
 cc_library(
+    name = "bpso_partition_config",
+    srcs = [
+        "bpso_partition_config.cc",
+    ],
+    hdrs = [
+        "bpso_partition_config.h",
+    ],
+    deps = [],
+)
+
+cc_library(
     name = "sa_sim_delegate",
     srcs = [
         "sa_sim_delegate.cc",
@@ -18,6 +29,7 @@ cc_library(
         "util.h",
     ],
     deps = [
+        ":pbso_partition_config",
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/delegates/utils:simple_delegate",
         "//tensorflow/lite/kernels:padding",

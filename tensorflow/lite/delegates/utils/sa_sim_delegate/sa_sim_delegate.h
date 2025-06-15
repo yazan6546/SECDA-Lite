@@ -18,6 +18,10 @@ typedef struct {
   bool error_during_prepare;
   // Report error during invoke.
   bool error_during_invoke;
+  // BPSO partition configuration file path
+  const char* bpso_partition_config_path;
+  // Enable BPSO-controlled partitioning
+  bool enable_bpso_partitioning;
 } SASimDelegateOptions;
 
 // Returns a structure with the default delegate options.
