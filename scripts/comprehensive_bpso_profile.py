@@ -184,8 +184,8 @@ class BPSOWorkflowProfiler:
         else:
             print(f"  SUCCESS: Per-layer profiling completed")
         
-        # Load JSON profile
-        json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
+        # Load JSON profile - per_layer_profiling.py uses the original model_name (with .tflite)
+        json_file = f"{self.results_dir}/{model_name}_partitioning_profile.json"
         json_data = self.load_json_profile(json_file)
         
         if json_data:

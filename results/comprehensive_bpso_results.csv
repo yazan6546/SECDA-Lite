@@ -1,0 +1,3 @@
+model,execution_mode,total_layers,delegated_layers,total_cycles,total_energy_cost,total_execution_cost,total_communication_cost,total_compute_cost,total_memory_cost,compute_efficiency_avg,memory_efficiency_avg,delegated_layer_count,delegated_layer_energy,delegated_layer_execution_cost,cpu_layer_count,cpu_layer_energy,cpu_layer_execution_cost,bpso_sa_layers,bpso_cpu_layers,bpso_total_layers
+mobilenetv1.tflite,baseline,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+mobilenetv1.tflite,default,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
