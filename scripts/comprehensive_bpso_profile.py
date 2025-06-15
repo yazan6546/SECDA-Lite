@@ -996,7 +996,8 @@ class BPSOWorkflowProfiler:
             "--model_name", profile_name
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                               universal_newlines=True, cwd=self.workspace_dir)
         if result.returncode != 0:
             print(f"    Warning: Per-layer profiling failed: {result.stderr}")
         
@@ -1007,7 +1008,8 @@ class BPSOWorkflowProfiler:
         print(f"    Running BPSO optimization...")
         
         cmd = ["python3", "bpso_layer_partitioning.py"]
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=f"{self.workspace_dir}/scripts")
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               universal_newlines=True, cwd=f"{self.workspace_dir}/scripts")
         
         if result.returncode != 0:
             print(f"    Warning: BPSO optimization failed: {result.stderr}")
