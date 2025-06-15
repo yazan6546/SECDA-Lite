@@ -51,9 +51,11 @@ class LayerProfiler:
         """Extract layer information from TFLite model using verbose output"""
         cmd = [
             binary_path,
-            f"--model={model_path}",
+            f"--tflite_model={model_path}",
             "--image=test_images/grace_hopper.bmp",
-            "--verbose=3"
+            "--labels=tensorflow/lite/examples/ios/camera/data/labels.txt",
+            "-p", "1",
+            "--verbose", "1"
         ]
         
         try:
@@ -153,10 +155,12 @@ class LayerProfiler:
         # Run inference with delegate enabled
         cmd = [
             binary_path,
-            f"--model={model_path}",
+            f"--tflite_model={model_path}",
             "--image=test_images/grace_hopper.bmp",
+            "--labels=tensorflow/lite/examples/ios/camera/data/labels.txt",
             f"--use_{delegate_type}_delegate=true",
-            "--verbose=1"
+            "-p", "1",
+            "--verbose", "1"
         ]
         
         try:
