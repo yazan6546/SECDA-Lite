@@ -1,0 +1,371 @@
+INFO: Loaded model models/mobilenetv1.tflite
+INFO: resolved reporter
+INFO: tensors size: 103
+INFO: nodes size: 39
+INFO: inputs: 1
+INFO: input(0) name: input_1
+INFO: 0: input_1_int8, 150528, 9, 0.00392157, -128
+INFO: 1: mobilenet_1.00_224/conv_pad_6/Pad/paddings;StatefulPartitionedCall/mobilenet_1.00_224/conv_pad_6/Pad/paddings, 32, 2, 0, 0
+INFO: 2: mobilenet_1.00_224/global_average_pooling2d/Mean/reduction_indices;StatefulPartitionedCall/mobilenet_1.00_224/global_average_pooling2d/Mean/reduction_indices, 8, 2, 0, 0
+INFO: 3: mobilenet_1.00_224/reshape_1/Reshape/shape;StatefulPartitionedCall/mobilenet_1.00_224/reshape_1/Reshape/shape, 16, 2, 0, 0
+INFO: 4: mobilenet_1.00_224/reshape_2/Reshape/shape;StatefulPartitionedCall/mobilenet_1.00_224/reshape_2/Reshape/shape, 8, 2, 0, 0
+INFO: 5: mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3, 128, 2, 0, 0
+INFO: 6: mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3, 256, 2, 0, 0
+INFO: 7: mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3, 512, 2, 0, 0
+INFO: 8: mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3, 512, 2, 0, 0
+INFO: 9: mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3, 1024, 2, 0, 0
+INFO: 10: mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3, 1024, 2, 0, 0
+INFO: 11: mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 12: mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 13: mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 14: mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 15: mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 16: mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3, 2048, 2, 0, 0
+INFO: 17: mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3, 4096, 2, 0, 0
+INFO: 18: mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D, 864, 9, 0, 0
+INFO: 19: mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D, 2048, 9, 0, 0
+INFO: 20: mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_2/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D, 8192, 9, 0, 0
+INFO: 21: mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_3/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D, 16384, 9, 0, 0
+INFO: 22: mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_4/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D, 32768, 9, 0, 0
+INFO: 23: mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_5/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D, 65536, 9, 0, 0
+INFO: 24: mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_6/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D, 131072, 9, 0, 0
+INFO: 25: mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_7/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D, 262144, 9, 0, 0
+INFO: 26: mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_8/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D, 262144, 9, 0, 0
+INFO: 27: mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_9/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D, 262144, 9, 0, 0
+INFO: 28: mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_10/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D, 262144, 9, 0, 0
+INFO: 29: mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_11/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D, 262144, 9, 0, 0
+INFO: 30: mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_12/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D, 524288, 9, 0, 0
+INFO: 31: mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D, 1048576, 9, 0, 0
+INFO: 32: mobilenet_1.00_224/conv_preds/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/Conv2D, 1024000, 9, 0, 0
+INFO: 33: mobilenet_1.00_224/conv1_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv1_relu/Relu6;mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D, 128, 2, 0, 0
+INFO: 34: mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1/depthwise, 288, 9, 0, 0
+INFO: 35: mobilenet_1.00_224/conv_pw_1_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1_relu/Relu6;mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D, 256, 2, 0, 0
+INFO: 36: mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2/depthwise, 576, 9, 0, 0
+INFO: 37: mobilenet_1.00_224/conv_pw_2_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2_relu/Relu6;mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_2/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D, 512, 2, 0, 0
+INFO: 38: mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_3/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3/depthwise;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise, 1152, 9, 0, 0
+INFO: 39: mobilenet_1.00_224/conv_pw_3_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3_relu/Relu6;mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_3/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D, 512, 2, 0, 0
+INFO: 40: mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise, 1152, 9, 0, 0
+INFO: 41: mobilenet_1.00_224/conv_pw_4_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4_relu/Relu6;mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_4/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D, 1024, 2, 0, 0
+INFO: 42: mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_5/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5/depthwise;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise, 2304, 9, 0, 0
+INFO: 43: mobilenet_1.00_224/conv_pw_5_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5_relu/Relu6;mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_5/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D, 1024, 2, 0, 0
+INFO: 44: mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise, 2304, 9, 0, 0
+INFO: 45: mobilenet_1.00_224/conv_pw_6_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6_relu/Relu6;mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_6/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D, 2048, 2, 0, 0
+INFO: 46: mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_7/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7/depthwise;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 47: mobilenet_1.00_224/conv_pw_7_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7_relu/Relu6;mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_7/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D, 2048, 2, 0, 0
+INFO: 48: mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_8/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8/depthwise;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 49: mobilenet_1.00_224/conv_pw_8_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8_relu/Relu6;mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_8/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D, 2048, 2, 0, 0
+INFO: 50: mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_9/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9/depthwise;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 51: mobilenet_1.00_224/conv_pw_9_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9_relu/Relu6;mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_9/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D, 2048, 2, 0, 0
+INFO: 52: mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_10/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10/depthwise;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 53: mobilenet_1.00_224/conv_pw_10_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10_relu/Relu6;mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_10/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D, 2048, 2, 0, 0
+INFO: 54: mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_11/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11/depthwise;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 55: mobilenet_1.00_224/conv_pw_11_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11_relu/Relu6;mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_11/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D, 2048, 2, 0, 0
+INFO: 56: mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 4608, 9, 0, 0
+INFO: 57: mobilenet_1.00_224/conv_pw_12_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12_relu/Relu6;mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_12/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D, 4096, 2, 0, 0
+INFO: 58: mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_13/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13/depthwise;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D, 9216, 9, 0, 0
+INFO: 59: mobilenet_1.00_224/conv_pw_13_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_relu/Relu6;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D, 4096, 2, 0, 0
+INFO: 60: mobilenet_1.00_224/conv_preds/BiasAdd;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/BiasAdd;mobilenet_1.00_224/conv_preds/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/BiasAdd/ReadVariableOp, 4000, 2, 0, 0
+INFO: 61: mobilenet_1.00_224/conv1_pad/Pad;StatefulPartitionedCall/mobilenet_1.00_224/conv1_pad/Pad, 151875, 9, 0.00392157, -128
+INFO: 62: mobilenet_1.00_224/conv1_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv1_relu/Relu6;mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv1/Conv2D1, 401408, 9, 0.0235294, -128
+INFO: 63: mobilenet_1.00_224/conv_dw_1_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1_relu/Relu6;mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_1/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_1/depthwise, 401408, 9, 0.0235294, -128
+INFO: 64: mobilenet_1.00_224/conv_pw_1_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1_relu/Relu6;mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_1/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_1/Conv2D1, 802816, 9, 0.0235294, -128
+INFO: 65: mobilenet_1.00_224/conv_pad_2/Pad;StatefulPartitionedCall/mobilenet_1.00_224/conv_pad_2/Pad, 817216, 9, 0.0235294, -128
+INFO: 66: mobilenet_1.00_224/conv_dw_2_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2_relu/Relu6;mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_2/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_2/depthwise, 200704, 9, 0.0235294, -128
+INFO: 67: mobilenet_1.00_224/conv_pw_2_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2_relu/Relu6;mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_2/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_2/Conv2D1, 401408, 9, 0.0235294, -128
+INFO: 68: mobilenet_1.00_224/conv_dw_3_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3_relu/Relu6;mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise;mobilenet_1.00_224/conv_dw_3/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_3/depthwise, 401408, 9, 0.0235294, -128
+INFO: 69: mobilenet_1.00_224/conv_pw_3_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3_relu/Relu6;mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_3/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_3/Conv2D1, 401408, 9, 0.0235294, -128
+INFO: 70: mobilenet_1.00_224/conv_pad_4/Pad;StatefulPartitionedCall/mobilenet_1.00_224/conv_pad_4/Pad, 415872, 9, 0.0235294, -128
+INFO: 71: mobilenet_1.00_224/conv_dw_4_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4_relu/Relu6;mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_4/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_4/depthwise, 100352, 9, 0.0235294, -128
+INFO: 72: mobilenet_1.00_224/conv_pw_4_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4_relu/Relu6;mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_4/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_4/Conv2D1, 200704, 9, 0.0235294, -128
+INFO: 73: mobilenet_1.00_224/conv_dw_5_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5_relu/Relu6;mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise;mobilenet_1.00_224/conv_dw_5/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_5/depthwise, 200704, 9, 0.0235294, -128
+INFO: 74: mobilenet_1.00_224/conv_pw_5_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5_relu/Relu6;mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_5/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_5/Conv2D1, 200704, 9, 0.0235294, -128
+INFO: 75: mobilenet_1.00_224/conv_pad_6/Pad;StatefulPartitionedCall/mobilenet_1.00_224/conv_pad_6/Pad, 215296, 9, 0.0235294, -128
+INFO: 76: mobilenet_1.00_224/conv_dw_6_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6_relu/Relu6;mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_6/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_6/depthwise, 50176, 9, 0.0235294, -128
+INFO: 77: mobilenet_1.00_224/conv_pw_6_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6_relu/Relu6;mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_6/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_6/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 78: mobilenet_1.00_224/conv_dw_7_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7_relu/Relu6;mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;mobilenet_1.00_224/conv_dw_7/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_7/depthwise, 100352, 9, 0.0235294, -128
+INFO: 79: mobilenet_1.00_224/conv_pw_7_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7_relu/Relu6;mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_7/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_7/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 80: mobilenet_1.00_224/conv_dw_8_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8_relu/Relu6;mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;mobilenet_1.00_224/conv_dw_8/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_8/depthwise, 100352, 9, 0.0235294, -128
+INFO: 81: mobilenet_1.00_224/conv_pw_8_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8_relu/Relu6;mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_8/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_8/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 82: mobilenet_1.00_224/conv_dw_9_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9_relu/Relu6;mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;mobilenet_1.00_224/conv_dw_9/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_9/depthwise, 100352, 9, 0.0235294, -128
+INFO: 83: mobilenet_1.00_224/conv_pw_9_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9_relu/Relu6;mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_9/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_9/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 84: mobilenet_1.00_224/conv_dw_10_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10_relu/Relu6;mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;mobilenet_1.00_224/conv_dw_10/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_10/depthwise, 100352, 9, 0.0235294, -128
+INFO: 85: mobilenet_1.00_224/conv_pw_10_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10_relu/Relu6;mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_10/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_10/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 86: mobilenet_1.00_224/conv_dw_11_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11_relu/Relu6;mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;mobilenet_1.00_224/conv_dw_11/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_11/depthwise, 100352, 9, 0.0235294, -128
+INFO: 87: mobilenet_1.00_224/conv_pw_11_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11_relu/Relu6;mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_11/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_11/Conv2D1, 100352, 9, 0.0235294, -128
+INFO: 88: mobilenet_1.00_224/conv_pad_12/Pad;StatefulPartitionedCall/mobilenet_1.00_224/conv_pad_12/Pad, 115200, 9, 0.0235294, -128
+INFO: 89: mobilenet_1.00_224/conv_dw_12_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_relu/Relu6;mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_12/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_12/depthwise, 25088, 9, 0.0235294, -128
+INFO: 90: mobilenet_1.00_224/conv_pw_12_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12_relu/Relu6;mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_12/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_12/Conv2D1, 50176, 9, 0.0235294, -128
+INFO: 91: mobilenet_1.00_224/conv_dw_13_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13_relu/Relu6;mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13_bn/FusedBatchNormV3;mobilenet_1.00_224/conv_dw_13/depthwise;StatefulPartitionedCall/mobilenet_1.00_224/conv_dw_13/depthwise;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D, 50176, 9, 0.0235294, -128
+INFO: 92: mobilenet_1.00_224/conv_pw_13_relu/Relu6;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_relu/Relu6;mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13_bn/FusedBatchNormV3;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D/ReadVariableOp;mobilenet_1.00_224/conv_pw_13/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_pw_13/Conv2D1, 50176, 9, 0.0235294, -128
+INFO: 93: mobilenet_1.00_224/global_average_pooling2d/Mean;StatefulPartitionedCall/mobilenet_1.00_224/global_average_pooling2d/Mean, 1024, 9, 0.02211, -128
+INFO: 94: mobilenet_1.00_224/reshape_1/Reshape;StatefulPartitionedCall/mobilenet_1.00_224/reshape_1/Reshape, 1024, 9, 0.02211, -128
+INFO: 95: mobilenet_1.00_224/conv_preds/BiasAdd;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/BiasAdd;mobilenet_1.00_224/conv_preds/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/Conv2D;StatefulPartitionedCall/mobilenet_1.00_224/conv_preds/BiasAdd/ReadVariableOp1, 1000, 9, 0.119586, -62
+INFO: 96: mobilenet_1.00_224/reshape_2/Reshape;StatefulPartitionedCall/mobilenet_1.00_224/reshape_2/Reshape, 1000, 9, 0.119586, -62
+INFO: 97: Identity_int8, 1000, 9, 0.00390625, -128
+INFO: 98: input_1, 602112, 1, 0, 0
+INFO: 99: Identity, 4000, 1, 0, 0
+INFO: len: 940650
+INFO: width, height, channels: 517, 606, 3
+INFO: input: 98
+INFO: number of inputs: 1
+INFO: number of outputs: 1
+Interpreter has 1 subgraphs.
+
+-----------Subgraph-0 has 104 tensors and 39 nodes------------
+1 Inputs: [98] -> 602112B (0.57MB)
+1 Outputs: [99] -> 4000B (0.00MB)
+
+Tensor  ID Name                      Type            AllocType          Size (Bytes/MB)    Shape      MemAddr-Offset  
+Tensor   0 input_1_int8              kTfLiteInt8     kTfLiteArenaRw     150528   / 0.14 [1,224,224,3] [602112, 752640)
+Tensor   1 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      32       / 0.00 [4,2] [4257856, 4257888)
+Tensor   2 mobilenet_1.00_224/glo... kTfLiteInt32    kTfLiteMmapRo      8        / 0.00 [2] [4257824, 4257832)
+Tensor   3 mobilenet_1.00_224/res... kTfLiteInt32    kTfLiteMmapRo      16       / 0.00 [4] [4257792, 4257808)
+Tensor   4 mobilenet_1.00_224/res... kTfLiteInt32    kTfLiteMmapRo      8        / 0.00 [2] [4257760, 4257768)
+Tensor   5 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      128      / 0.00 [32] [4257616, 4257744)
+Tensor   6 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      256      / 0.00 [64] [4257344, 4257600)
+Tensor   7 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      512      / 0.00 [128] [4256816, 4257328)
+Tensor   8 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      512      / 0.00 [128] [4256288, 4256800)
+Tensor   9 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      1024     / 0.00 [256] [4255248, 4256272)
+Tensor  10 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      1024     / 0.00 [256] [4254208, 4255232)
+Tensor  11 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4252144, 4254192)
+Tensor  12 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4250080, 4252128)
+Tensor  13 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4248016, 4250064)
+Tensor  14 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4245952, 4248000)
+Tensor  15 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4243888, 4245936)
+Tensor  16 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [4241824, 4243872)
+Tensor  17 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      4096     / 0.00 [1024] [4237712, 4241808)
+Tensor  18 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      864      / 0.00 [32,3,3,3] [4236832, 4237696)
+Tensor  19 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      2048     / 0.00 [64,1,1,32] [4234768, 4236816)
+Tensor  20 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      8192     / 0.01 [128,1,1,64] [4226560, 4234752)
+Tensor  21 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      16384    / 0.02 [128,1,1,128] [4210160, 4226544)
+Tensor  22 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      32768    / 0.03 [256,1,1,128] [4177376, 4210144)
+Tensor  23 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      65536    / 0.06 [256,1,1,256] [4111824, 4177360)
+Tensor  24 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      131072   / 0.12 [512,1,1,256] [3980736, 4111808)
+Tensor  25 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      262144   / 0.25 [512,1,1,512] [3718576, 3980720)
+Tensor  26 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      262144   / 0.25 [512,1,1,512] [3456416, 3718560)
+Tensor  27 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      262144   / 0.25 [512,1,1,512] [3194256, 3456400)
+Tensor  28 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      262144   / 0.25 [512,1,1,512] [2932096, 3194240)
+Tensor  29 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      262144   / 0.25 [512,1,1,512] [2669936, 2932080)
+Tensor  30 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      524288   / 0.50 [1024,1,1,512] [2145632, 2669920)
+Tensor  31 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      1048576  / 1.00 [1024,1,1,1024] [1097040, 2145616)
+Tensor  32 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      1024000  / 0.98 [1000,1,1,1024] [73024, 1097024)
+Tensor  33 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      128      / 0.00 [32] [72880, 73008)
+Tensor  34 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      288      / 0.00 [1,3,3,32] [72576, 72864)
+Tensor  35 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      256      / 0.00 [64] [72304, 72560)
+Tensor  36 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      576      / 0.00 [1,3,3,64] [71712, 72288)
+Tensor  37 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      512      / 0.00 [128] [71184, 71696)
+Tensor  38 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      1152     / 0.00 [1,3,3,128] [70016, 71168)
+Tensor  39 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      512      / 0.00 [128] [69488, 70000)
+Tensor  40 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      1152     / 0.00 [1,3,3,128] [68320, 69472)
+Tensor  41 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      1024     / 0.00 [256] [67280, 68304)
+Tensor  42 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      2304     / 0.00 [1,3,3,256] [64960, 67264)
+Tensor  43 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      1024     / 0.00 [256] [63920, 64944)
+Tensor  44 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      2304     / 0.00 [1,3,3,256] [61600, 63904)
+Tensor  45 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [59536, 61584)
+Tensor  46 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [54912, 59520)
+Tensor  47 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [52848, 54896)
+Tensor  48 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [48224, 52832)
+Tensor  49 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [46160, 48208)
+Tensor  50 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [41536, 46144)
+Tensor  51 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [39472, 41520)
+Tensor  52 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [34848, 39456)
+Tensor  53 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [32784, 34832)
+Tensor  54 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [28160, 32768)
+Tensor  55 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      2048     / 0.00 [512] [26096, 28144)
+Tensor  56 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      4608     / 0.00 [1,3,3,512] [21472, 26080)
+Tensor  57 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      4096     / 0.00 [1024] [17360, 21456)
+Tensor  58 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteMmapRo      9216     / 0.01 [1,3,3,1024] [8128, 17344)
+Tensor  59 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      4096     / 0.00 [1024] [4016, 8112)
+Tensor  60 mobilenet_1.00_224/con... kTfLiteInt32    kTfLiteMmapRo      4000     / 0.00 [1000] [0, 4000)
+Tensor  61 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     151875   / 0.14 [1,225,225,3] [1342208, 1494083)
+Tensor  62 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     401408   / 0.38 [1,112,112,32] [602112, 1003520)
+Tensor  63 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     401408   / 0.38 [1,112,112,32] [1003520, 1404928)
+Tensor  64 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     802816   / 0.77 [1,112,112,64] [1419328, 2222144)
+Tensor  65 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     817216   / 0.78 [1,113,113,64] [602112, 1419328)
+Tensor  66 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     200704   / 0.19 [1,56,56,64] [1419328, 1620032)
+Tensor  67 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     401408   / 0.38 [1,56,56,128] [602112, 1003520)
+Tensor  68 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     401408   / 0.38 [1,56,56,128] [1003520, 1404928)
+Tensor  69 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     401408   / 0.38 [1,56,56,128] [1404928, 1806336)
+Tensor  70 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     415872   / 0.40 [1,57,57,128] [602112, 1017984)
+Tensor  71 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,28,28,128] [1017984, 1118336)
+Tensor  72 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     200704   / 0.19 [1,28,28,256] [602112, 802816)
+Tensor  73 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     200704   / 0.19 [1,28,28,256] [802816, 1003520)
+Tensor  74 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     200704   / 0.19 [1,28,28,256] [1003520, 1204224)
+Tensor  75 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     215296   / 0.21 [1,29,29,256] [602112, 817408)
+Tensor  76 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     50176    / 0.05 [1,14,14,256] [817408, 867584)
+Tensor  77 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [602112, 702464)
+Tensor  78 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [702464, 802816)
+Tensor  79 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [602112, 702464)
+Tensor  80 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [702464, 802816)
+Tensor  81 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [602112, 702464)
+Tensor  82 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [702464, 802816)
+Tensor  83 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [602112, 702464)
+Tensor  84 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [702464, 802816)
+Tensor  85 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [602112, 702464)
+Tensor  86 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [702464, 802816)
+Tensor  87 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     100352   / 0.10 [1,14,14,512] [802816, 903168)
+Tensor  88 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     115200   / 0.11 [1,15,15,512] [602112, 717312)
+Tensor  89 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     25088    / 0.02 [1,7,7,512] [717312, 742400)
+Tensor  90 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     50176    / 0.05 [1,7,7,1024] [602112, 652288)
+Tensor  91 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     50176    / 0.05 [1,7,7,1024] [652288, 702464)
+Tensor  92 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     50176    / 0.05 [1,7,7,1024] [602112, 652288)
+Tensor  93 mobilenet_1.00_224/glo... kTfLiteInt8     kTfLiteArenaRw     1024     / 0.00 [1,1024] [656384, 657408)
+Tensor  94 mobilenet_1.00_224/res... kTfLiteInt8     kTfLiteArenaRw     1024     / 0.00 [1,1,1,1024] [602112, 603136)
+Tensor  95 mobilenet_1.00_224/con... kTfLiteInt8     kTfLiteArenaRw     1000     / 0.00 [1,1,1,1000] [603136, 604136)
+Tensor  96 mobilenet_1.00_224/res... kTfLiteInt8     kTfLiteArenaRw     1000     / 0.00 [1,1000] [602112, 603112)
+Tensor  97 Identity_int8             kTfLiteInt8     kTfLiteArenaRw     1000     / 0.00 [1,1000] [606144, 607144)
+Tensor  98 input_1                   kTfLiteFloat32  kTfLiteArenaRw     602112   / 0.57 [1,224,224,3] [0, 602112)
+Tensor  99 Identity                  kTfLiteFloat32  kTfLiteArenaRw     4000     / 0.00 [1,1000] [602112, 606112)
+Tensor 100 (nil)                     kTfLiteInt32    kTfLiteArenaRw     16       / 0.00 [4] [657408, 657424)
+Tensor 101 (nil)                     kTfLiteInt32    kTfLiteArenaRw     8        / 0.00 [2] [657472, 657480)
+Tensor 102 (nil)                     kTfLiteInt32    kTfLiteArenaRw     4096     / 0.00 [1024] [652288, 656384)
+Tensor 103 (nil)                     kTfLiteInt8     kTfLiteArenaRw     338688   / 0.32 [1,112,112,27] [1003520, 1342208)
+
+kTfLiteArenaRw Info: 
+Tensor 65 has the max size 817216 bytes (0.779 MB).
+This memory arena is estimated as[0x71d4735ff880, 0x71d4733e1040), taking 2222144 bytes (2.119 MB).
+One possible set of tensors that have non-overlapping memory spaces with each other, and they take up the whole arena:
+Tensor 98 -> 65 -> 64.
+
+kTfLiteArenaRwPersistent Info: not holding any allocation.
+
+kTfLiteMmapRo Info: 
+Tensor 31 has the max size 1048576 bytes (1.000 MB).
+This memory arena is estimated as[0x71d473a0fce0, 0x71d473600480), taking 4257888 bytes (4.061 MB).
+One possible set of tensors that have non-overlapping memory spaces with each other, and they take up the whole arena:
+Tensor 60 -> 59 -> 58 -> 57 -> 56 -> 55 -> 54 -> 53 -> 52 -> 51 -> 50 -> 49 -> 48 -> 47 -> 46 -> 45 -> 44 -> 43 -> 42 -> 41 -> 40 -> 39 -> 38 -> 37 -> 36 -> 35 -> 34 -> 33 -> 32 -> 31 -> 30 -> 29 -> 28 -> 27 -> 26 -> 25 -> 24 -> 23 -> 22 -> 21 -> 20 -> 19 -> 18 -> 17 -> 16 -> 15 -> 14 -> 13 -> 12 -> 11 -> 10 -> 9 -> 8 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1.
+
+kTfLiteDynamic Info: not holding any allocation.
+
+Node   0 Operator Builtin Code 114 QUANTIZE (not delegated)
+  1 Input Tensors:[98] -> 602112B (0.57MB)
+  1 Output Tensors:[0] -> 150528B (0.14MB)
+Node   1 Operator Builtin Code  34 PAD (not delegated)
+  2 Input Tensors:[0,1] -> 150560B (0.14MB)
+  1 Output Tensors:[61] -> 151875B (0.14MB)
+Node   2 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[61,18,33] -> 152867B (0.15MB)
+  1 Output Tensors:[62] -> 401408B (0.38MB)
+  1 Temporary Tensors:[103] -> 338688B (0.32MB)
+Node   3 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[62,34,5] -> 401824B (0.38MB)
+  1 Output Tensors:[63] -> 401408B (0.38MB)
+Node   4 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[63,19,35] -> 403712B (0.39MB)
+  1 Output Tensors:[64] -> 802816B (0.77MB)
+Node   5 Operator Builtin Code  34 PAD (not delegated)
+  2 Input Tensors:[64,1] -> 802848B (0.77MB)
+  1 Output Tensors:[65] -> 817216B (0.78MB)
+Node   6 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[65,36,6] -> 818048B (0.78MB)
+  1 Output Tensors:[66] -> 200704B (0.19MB)
+Node   7 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[66,20,37] -> 209408B (0.20MB)
+  1 Output Tensors:[67] -> 401408B (0.38MB)
+Node   8 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[67,38,7] -> 403072B (0.38MB)
+  1 Output Tensors:[68] -> 401408B (0.38MB)
+Node   9 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[68,21,39] -> 418304B (0.40MB)
+  1 Output Tensors:[69] -> 401408B (0.38MB)
+Node  10 Operator Builtin Code  34 PAD (not delegated)
+  2 Input Tensors:[69,1] -> 401440B (0.38MB)
+  1 Output Tensors:[70] -> 415872B (0.40MB)
+Node  11 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[70,40,8] -> 417536B (0.40MB)
+  1 Output Tensors:[71] -> 100352B (0.10MB)
+Node  12 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[71,22,41] -> 134144B (0.13MB)
+  1 Output Tensors:[72] -> 200704B (0.19MB)
+Node  13 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[72,42,9] -> 204032B (0.19MB)
+  1 Output Tensors:[73] -> 200704B (0.19MB)
+Node  14 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[73,23,43] -> 267264B (0.25MB)
+  1 Output Tensors:[74] -> 200704B (0.19MB)
+Node  15 Operator Builtin Code  34 PAD (not delegated)
+  2 Input Tensors:[74,1] -> 200736B (0.19MB)
+  1 Output Tensors:[75] -> 215296B (0.21MB)
+Node  16 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[75,44,10] -> 218624B (0.21MB)
+  1 Output Tensors:[76] -> 50176B (0.05MB)
+Node  17 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[76,24,45] -> 183296B (0.17MB)
+  1 Output Tensors:[77] -> 100352B (0.10MB)
+Node  18 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[77,46,11] -> 107008B (0.10MB)
+  1 Output Tensors:[78] -> 100352B (0.10MB)
+Node  19 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[78,25,47] -> 364544B (0.35MB)
+  1 Output Tensors:[79] -> 100352B (0.10MB)
+Node  20 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[79,48,12] -> 107008B (0.10MB)
+  1 Output Tensors:[80] -> 100352B (0.10MB)
+Node  21 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[80,26,49] -> 364544B (0.35MB)
+  1 Output Tensors:[81] -> 100352B (0.10MB)
+Node  22 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[81,50,13] -> 107008B (0.10MB)
+  1 Output Tensors:[82] -> 100352B (0.10MB)
+Node  23 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[82,27,51] -> 364544B (0.35MB)
+  1 Output Tensors:[83] -> 100352B (0.10MB)
+Node  24 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[83,52,14] -> 107008B (0.10MB)
+  1 Output Tensors:[84] -> 100352B (0.10MB)
+Node  25 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[84,28,53] -> 364544B (0.35MB)
+  1 Output Tensors:[85] -> 100352B (0.10MB)
+Node  26 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[85,54,15] -> 107008B (0.10MB)
+  1 Output Tensors:[86] -> 100352B (0.10MB)
+Node  27 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[86,29,55] -> 364544B (0.35MB)
+  1 Output Tensors:[87] -> 100352B (0.10MB)
+Node  28 Operator Builtin Code  34 PAD (not delegated)
+  2 Input Tensors:[87,1] -> 100384B (0.10MB)
+  1 Output Tensors:[88] -> 115200B (0.11MB)
+Node  29 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[88,56,16] -> 121856B (0.12MB)
+  1 Output Tensors:[89] -> 25088B (0.02MB)
+Node  30 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[89,30,57] -> 553472B (0.53MB)
+  1 Output Tensors:[90] -> 50176B (0.05MB)
+Node  31 Operator Builtin Code   4 DEPTHWISE_CONV_2D (not delegated)
+  3 Input Tensors:[90,58,17] -> 63488B (0.06MB)
+  1 Output Tensors:[91] -> 50176B (0.05MB)
+Node  32 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[91,31,59] -> 1102848B (1.05MB)
+  1 Output Tensors:[92] -> 50176B (0.05MB)
+Node  33 Operator Builtin Code  40 MEAN (not delegated)
+  2 Input Tensors:[92,2] -> 50184B (0.05MB)
+  1 Output Tensors:[93] -> 1024B (0.00MB)
+  3 Temporary Tensors:[100-102] -> 4120B (0.00MB)
+Node  34 Operator Builtin Code  22 RESHAPE (not delegated)
+  2 Input Tensors:[93,3] -> 1040B (0.00MB)
+  1 Output Tensors:[94] -> 1024B (0.00MB)
+Node  35 Operator Builtin Code   3 CONV_2D (not delegated)
+  3 Input Tensors:[94,32,60] -> 1029024B (0.98MB)
+  1 Output Tensors:[95] -> 1000B (0.00MB)
+Node  36 Operator Builtin Code  22 RESHAPE (not delegated)
+  2 Input Tensors:[95,4] -> 1008B (0.00MB)
+  1 Output Tensors:[96] -> 1000B (0.00MB)
+Node  37 Operator Builtin Code  25 SOFTMAX (not delegated)
+  1 Input Tensors:[96] -> 1000B (0.00MB)
+  1 Output Tensors:[97] -> 1000B (0.00MB)
+Node  38 Operator Builtin Code   6 DEQUANTIZE (not delegated)
+  1 Input Tensors:[97] -> 1000B (0.00MB)
+  1 Output Tensors:[99] -> 4000B (0.00MB)
+
+Execution plan as the list of 39 nodes invoked in-order: [0-38]
+--------------Subgraph-0 dump has completed--------------
+
+FLOAT  Loaded
+Input  Loaded
+INFO: invoked
+INFO: average time: 727.372 ms
+INFO: 0.445312: 652 microwave
+INFO: 0.445312: 457 bow
+INFO: 0.0664062: 834 submarine
+INFO: 0.0117188: 906 window shade
+INFO: 0.0078125: 667 mortar

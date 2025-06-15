@@ -7,12 +7,20 @@
 #include "../ap_sysc/hls_bus_if.h"
 // #include "tb_driver.h"
 
-int sc_main(int argc, char* argv[]) { return 0; }
+// Minimal sc_main function required by SystemC linker
+int sc_main(int argc, char* argv[]) { 
+  // Don't start SystemC simulation automatically
+  // This function is required by SystemC but we don't want to enter simulation mode
+  // The actual SystemC simulation should be started explicitly by the delegate when needed
+  return 0; 
+}
 
 void sysC_init() {
+#ifdef SYSC
   sc_report_handler::set_actions("/IEEE_Std_1666/deprecated", SC_DO_NOTHING);
   sc_report_handler::set_actions(SC_ID_LOGIC_X_TO_BOOL_, SC_LOG);
   sc_report_handler::set_actions(SC_ID_VECTOR_CONTAINS_LOGIC_VALUE_, SC_LOG);
+#endif
 }
 
 // struct systemC_sigs {

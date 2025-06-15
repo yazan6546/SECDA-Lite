@@ -1,0 +1,11 @@
+INFO: Loaded model models/mobilenetv2.tflite
+INFO: resolved reporter
+FLOAT  Loaded
+Input  Loaded
+INFO: invoked
+INFO: average time: 424.787 ms
+INFO: 0.371094: 667 mortar
+INFO: 0.117188: 906 window shade
+INFO: 0.09375: 400 abaya
+INFO: 0.0585938: 834 submarine
+INFO: 0.0273438: 643 marimba

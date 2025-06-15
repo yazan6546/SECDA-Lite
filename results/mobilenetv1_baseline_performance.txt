@@ -1,0 +1,11 @@
+INFO: Loaded model models/mobilenetv1.tflite
+INFO: resolved reporter
+FLOAT  Loaded
+Input  Loaded
+INFO: invoked
+INFO: average time: 691.154 ms
+INFO: 0.445312: 652 microwave
+INFO: 0.445312: 457 bow
+INFO: 0.0664062: 834 submarine
+INFO: 0.0117188: 906 window shade
+INFO: 0.0078125: 667 mortar
