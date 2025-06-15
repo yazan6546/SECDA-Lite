@@ -199,7 +199,8 @@ class BPSOWorkflowProfiler:
             "--baseline_only"  # New flag for CPU-only profiling
         ]
         
-        profile_result = subprocess.run(profile_cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+        profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                       universal_newlines=True, cwd=self.workspace_dir)
         if profile_result.returncode != 0:
             print(f"  Warning: Baseline profiling failed: {profile_result.stderr}")
         
@@ -236,7 +237,8 @@ class BPSOWorkflowProfiler:
             ]
             
             start_time = time.time()
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                   universal_newlines=True, cwd=self.workspace_dir)
             end_time = time.time()
             
             wall_time = (end_time - start_time) * 1000
@@ -272,7 +274,8 @@ class BPSOWorkflowProfiler:
             "--model_name", model_name.replace('.tflite', '_default')
         ]
         
-        profile_result = subprocess.run(profile_cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+        profile_result = subprocess.run(profile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                       universal_newlines=True, cwd=self.workspace_dir)
         if profile_result.returncode != 0:
             print(f"  Warning: Default profiling failed: {profile_result.stderr}")
         
@@ -312,7 +315,8 @@ class BPSOWorkflowProfiler:
             ]
             
             start_time = time.time()
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                   universal_newlines=True, cwd=self.workspace_dir)
             end_time = time.time()
             
             wall_time = (end_time - start_time) * 1000
@@ -409,7 +413,8 @@ class BPSOWorkflowProfiler:
             ]
             
             start_time = time.time()
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.workspace_dir)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                   universal_newlines=True, cwd=self.workspace_dir)
             end_time = time.time()
             
             wall_time = (end_time - start_time) * 1000
