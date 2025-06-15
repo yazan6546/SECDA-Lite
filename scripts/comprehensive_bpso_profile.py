@@ -341,69 +341,146 @@ class BPSOWorkflowProfiler:
         profile_name = model_name.replace('.tflite', '') + profile_suffix
         print(f"DEBUG: Running BPSO-modified profiling for {profile_name}...")
         
-        # First run standard profiling
-        json_metrics = self.run_per_layer_profiling(model_name, profile_suffix, "default")
-        
-        if not json_metrics:
-            return {}
-        
-        # Load BPSO config and modify the delegation decisions
+        # Use the working BPSO approach from test_bpso_manual.py
+        original_dir = os.getcwd()
         try:
-            bpso_decisions = {}
-            with open(bpso_config_path, 'r') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    layer_name = row.get('layer_name', '')
-                    partition_decision = row.get('partition_decision', '0')
-                    if layer_name:
-                        bpso_decisions[layer_name] = partition_decision == '1'
+            os.chdir(self.workspace_dir)
             
-            print(f"  Loaded BPSO decisions for {len(bpso_decisions)} layers")
+            # Import the profiler
+            import sys
+            sys.path.append('scripts')
+            from per_layer_profiling import LayerProfiler
             
-            # Modify the JSON data based on BPSO decisions
-            # This is a simulation since we can't actually change the delegate behavior
-            # but it gives us different metrics for comparison
+            # Step 1: Run inference with BPSO config
+            print("  Step 1: Running inference with BPSO config...")
+            model_path = f"models/{model_name}"
+            binary_path = "bazel-bin/tensorflow/lite/delegates/utils/sa_sim_delegate/label_image_plus_sa_sim_delegate"
             
-            # Re-generate the profile with simulated BPSO decisions
-            json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
-            if os.path.exists(json_file):
-                with open(json_file, 'r') as f:
-                    profile_data = json.load(f)
-                
-                # Apply BPSO decisions
-                delegated_count = 0
-                for layer_name, layer_data in profile_data.get('layers', {}).items():
-                    layer_type = layer_data.get('layer_info', {}).get('layer_type', '')
-                    # Check if BPSO decided to delegate this layer
-                    should_delegate = False
-                    for bpso_layer, delegate_decision in bpso_decisions.items():
-                        if layer_type in bpso_layer or bpso_layer in layer_name:
-                            should_delegate = delegate_decision
+            # Clean previous profiling data
+            csv_output = "outputs/sa_sim.csv"
+            if os.path.exists(csv_output):
+                os.remove(csv_output)
+            
+            # Run with BPSO config
+            cmd = [
+                binary_path,
+                f"--tflite_model={model_path}",
+                "--image=test_images/grace_hopper.bmp", 
+                "--labels=tensorflow/lite/examples/ios/camera/data/labels.txt",
+                "--use_sa_sim_delegate=true",
+                f"--bpso_partition_config={bpso_config_path}",
+                "-p", "1",
+                "--verbose", "1"
+            ]
+            
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                  universal_newlines=True, cwd=self.workspace_dir)
+            
+            # Extract number of delegated layers from BPSO output
+            num_delegated_layers = 0
+            output_text = result.stdout + result.stderr
+            for line in output_text.split('\n'):
+                if "nodes delegated out of" in line:
+                    parts = line.split("nodes delegated out of")
+                    if len(parts) > 0:
+                        try:
+                            num_delegated_layers = int(parts[0].split()[-1])
+                            print(f"  Found {num_delegated_layers} delegated layers with BPSO")
                             break
-                    
-                    # Update delegation status
-                    layer_data['is_delegated'] = should_delegate
-                    if should_delegate:
-                        delegated_count += 1
+                        except ValueError:
+                            pass
+            
+            if num_delegated_layers == 0:
+                print("  ERROR: No BPSO delegation found")
+                return {}
+            
+            # Step 2: Process profiling data
+            print("  Step 2: Processing profiling data...")
+            profiler = LayerProfiler()
+            
+            # Get layer information
+            layers = profiler.get_layer_info_from_tflite_verbose(model_path, binary_path)
+            print(f"  Extracted {len(layers)} layers from verbose output")
+            
+            # Parse SystemC profiling data with BPSO delegation count
+            layer_metrics = profiler.parse_systemc_profiling_per_layer(csv_output, num_delegated_layers)
+            print(f"  Extracted {len(layers)} layers, {len(layer_metrics)} SystemC metrics")
+            
+            # Step 3: Load BPSO decisions
+            print("  Step 3: Loading BPSO decisions...")
+            bpso_decisions = {}
+            try:
+                with open(bpso_config_path, 'r') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        layer_id = int(row.get('layer_id', -1))
+                        partition_decision = row.get('partition_decision', '0') == '1'
+                        if layer_id >= 0:
+                            bpso_decisions[layer_id] = partition_decision
                 
-                profile_data['delegated_layers'] = delegated_count
-                profile_data['delegate_type'] = 'bpso_optimized'
+                print(f"  Loaded BPSO decisions for {len(bpso_decisions)} layers")
+            except Exception as e:
+                print(f"  ERROR loading BPSO decisions: {e}")
+                return {}
+            
+            # Step 4: Create BPSO profile data
+            print("  Step 4: Creating BPSO profile data...")
+            profile_data = {
+                'model_name': profile_name,
+                'delegate_type': 'bpso_optimized',
+                'total_layers': len(layers),
+                'delegated_layers': num_delegated_layers,
+                'layers': {}
+            }
+            
+            # Map layers and apply BPSO decisions
+            delegated_layer_idx = 0
+            delegated_count = 0
+            
+            for i, layer in enumerate(layers):
+                layer_name = f"layer_{i}"
                 
-                # Save the modified profile
-                with open(json_file, 'w') as f:
-                    json.dump(profile_data, f, indent=2)
+                # Check BPSO decision for this layer
+                should_delegate = bpso_decisions.get(i, False)
                 
-                print(f"  Updated profile with BPSO decisions: {delegated_count} delegated layers")
+                if should_delegate and delegated_layer_idx < len(layer_metrics):
+                    # Use SystemC profiling data for BPSO-delegated layers
+                    delegated_name = f"delegated_layer_{delegated_layer_idx}"
+                    layer_metrics_data = layer_metrics.get(delegated_name, {})
+                    layer['is_delegated'] = True
+                    delegated_layer_idx += 1
+                    delegated_count += 1
+                else:
+                    # Use CPU baseline for non-delegated layers
+                    layer_metrics_data = profiler.estimate_cpu_baseline(layer)
+                    layer['is_delegated'] = False
                 
+                profile_data['layers'][layer_name] = {
+                    'layer_id': i,
+                    'layer_info': layer,
+                    'is_delegated': should_delegate,
+                    'performance_metrics': layer_metrics_data,
+                    'partitioning_metrics': profiler.calculate_partitioning_metrics(layer, layer_metrics_data)
+                }
+            
+            print(f"  Layers marked as delegated in profile: {delegated_count}")
+            
+            # Step 5: Save BPSO profile
+            print("  Step 5: Saving BPSO profile...")
+            profile_data['model_name'] = profile_name
+            report_file = profiler.generate_partitioning_report(profile_data)
+            print(f"  BPSO profile saved to: {report_file}")
+            
+            # Return aggregated metrics
+            return self.aggregate_json_metrics(profile_data)
+            
         except Exception as e:
-            print(f"  ERROR: Failed to apply BPSO decisions: {e}")
-        
-        # Re-aggregate the metrics from the modified profile
-        json_data = self.load_json_profile(json_file)
-        if json_data:
-            return self.aggregate_json_metrics(json_data)
-        else:
-            return json_metrics
+            print(f"  ERROR in BPSO profiling: {e}")
+            import traceback
+            traceback.print_exc()
+            return {}
+        finally:
+            os.chdir(original_dir)
 
     def analyze_bpso_config(self, config_file):
         """Analyze BPSO partition configuration"""
