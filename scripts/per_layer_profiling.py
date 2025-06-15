@@ -22,7 +22,7 @@ import pandas as pd
 from pathlib import Path
 
 class LayerProfiler:
-    def __init__(self, workspace_dir: str = "/workspaces/tensorflow/SECDA-Lite"):
+    def __init__(self, workspace_dir: str = "/root/Workspace/tensorflow"):
         self.workspace_dir = workspace_dir
         self.models_dir = f"{workspace_dir}/models"
         self.outputs_dir = f"{workspace_dir}/outputs"
