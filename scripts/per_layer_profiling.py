@@ -57,7 +57,7 @@ class LayerProfiler:
         ]
         
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=self.workspace_dir)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
             layers = []
             
             # Parse the verbose output to extract layer information
@@ -155,7 +155,7 @@ class LayerProfiler:
         ]
         
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=self.workspace_dir)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
             
             # Get layer information
             layers = self.get_layer_info_from_tflite_verbose(model_path, binary_path)
