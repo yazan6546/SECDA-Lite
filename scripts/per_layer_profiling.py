@@ -267,8 +267,8 @@ class LayerProfiler:
                     layer['is_delegated'] = True
                     delegated_layer_idx += 1
                 else:
-                    # Use empty metrics for CPU-only layers
-                    layer_metrics_data = {}
+                    # Provide baseline CPU estimates for non-delegated layers
+                    layer_metrics_data = self.estimate_cpu_baseline(layer)
                     layer['is_delegated'] = False
                 
                 profile_data['layers'][layer_name] = {
@@ -540,6 +540,53 @@ class LayerProfiler:
         
         print(f"PBSO DAG profiling data saved to: {pbso_csv_file}")
         return df
+
+    def estimate_cpu_baseline(self, layer_info: Dict) -> Dict:
+        """Estimate CPU baseline performance for non-delegated layers"""
+        
+        op_type = layer_info.get('op_type', 'UNKNOWN')
+        
+        # CPU baseline estimates based on operation type
+        cpu_baselines = {
+            'QUANTIZE': {'cycles': 100, 'memory': 64, 'compute': 50},
+            'DEQUANTIZE': {'cycles': 120, 'memory': 64, 'compute': 60},
+            'PAD': {'cycles': 50, 'memory': 32, 'compute': 10},
+            'RELU': {'cycles': 80, 'memory': 32, 'compute': 40},
+            'RELU6': {'cycles': 90, 'memory': 32, 'compute': 45},
+            'ADD': {'cycles': 60, 'memory': 64, 'compute': 30},
+            'MUL': {'cycles': 70, 'memory': 64, 'compute': 35},
+            'RESHAPE': {'cycles': 40, 'memory': 16, 'compute': 5},
+            'POOLING': {'cycles': 200, 'memory': 128, 'compute': 100},
+            'AVERAGE_POOL_2D': {'cycles': 250, 'memory': 128, 'compute': 125},
+            'MAX_POOL_2D': {'cycles': 200, 'memory': 128, 'compute': 100},
+            'SOFTMAX': {'cycles': 500, 'memory': 256, 'compute': 400},
+            'FULLY_CONNECTED': {'cycles': 1000, 'memory': 512, 'compute': 800},
+            'DEPTHWISE_CONV_2D': {'cycles': 2000, 'memory': 1024, 'compute': 1500},
+            'CONV_2D': {'cycles': 5000, 'memory': 2048, 'compute': 4000}  # Should be delegated, but fallback
+        }
+        
+        baseline = cpu_baselines.get(op_type, {'cycles': 100, 'memory': 64, 'compute': 50})
+        
+        return {
+            'read_cycles': int(baseline['cycles'] * 0.3),
+            'process_cycles': int(baseline['cycles'] * 0.6),
+            'idle_cycles': int(baseline['cycles'] * 0.1),
+            'gemmw_cycles': 0,  # No GEMM on CPU
+            'gemm_cycles': 0,   # No GEMM on CPU
+            'wstall_cycles': int(baseline['cycles'] * 0.05),
+            'max_input_buffer': baseline['memory'],
+            'max_weight_buffer': baseline['memory'] // 2,
+            'total_gmacs': baseline['compute'] // 10,
+            'total_outputs': baseline['compute'] // 20,
+            'total_cycles': baseline['cycles'],
+            'effective_cycles': int(baseline['cycles'] * 0.9),
+            'compute_efficiency': 60.0,  # CPU efficiency
+            'memory_efficiency': 80.0,   # CPU memory efficiency
+            'gmacs_per_cycle': (baseline['compute'] // 10) / max(1, baseline['cycles']),
+            'execution_cost': int(baseline['cycles'] * 1.5),  # CPU is less efficient
+            'memory_cost': baseline['memory'],
+            'communication_cost': int(baseline['cycles'] * 0.05)
+        }
 
 def main():
     """Main function for per-layer profiling"""
