@@ -329,7 +329,7 @@ def main():
     if len(sys.argv) > 1:
         profiling_data_path = sys.argv[1]
     else:
-        profiling_data_path = "outputs/pbso_dag_profiling.csv"  # Default path from workspace root
+        profiling_data_path = "outputs/sa_sim_model.csv"  # Default path from workspace root
     
     # Output path
     partition_config_path = "outputs/bpso_partition_config.csv"
