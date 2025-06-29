@@ -252,6 +252,7 @@ class LayerProfiler:
         
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
+            print(f"DEBUG: Subprocess completed with return code: {result.returncode}")
             
             # SystemC always writes to outputs/sa_sim.csv - copy it to our specific file immediately
             systemc_csv = f"{self.outputs_dir}/sa_sim.csv"
