@@ -25,7 +25,7 @@ def run_bpso_for_model(model_name):
             "--output_config", f"outputs/{model_name.replace('.tflite', '')}_bpso_partition_config.csv"
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         
         if result.returncode == 0:
             print(f"✅ SUCCESS: BPSO optimization completed for {model_name}")
