@@ -486,7 +486,7 @@ class SASimDelegateKernel : public SimpleDelegateKernelInterface {
 
     // Saves profilier records once all delegated nodes are executed
     if (dparams.delegated_nodes == 0) {
-      profile->saveCSVRecords("outputs/sa_sim");
+      profile->saveCSVRecords("~/Workspace/tensorflow/outputs/sa_sim");
     }
     return kTfLiteOk;
   }
@@ -635,23 +635,35 @@ class SASimDelegate : public SimpleDelegateInterface {
     }
     
     // Fallback to original logic when BPSO is disabled
-    // Only supports CONV2D op
-    if (kTfLiteBuiltinConv2d != registration->builtin_code) return false;
-
-    // This delegate only supports int8 types
-    if (node->inputs->size != 3) return false;
-    for (int i = 0; i < 2; ++i) {
-      auto& tensor = context->tensors[node->inputs->data[i]];
-      if (tensor.type != kTfLiteInt8) return false;
+    // Support multiple operation types with appropriate validation
+    if (registration->builtin_code == kTfLiteBuiltinConv2d ||
+        registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
+      // CONV2D and DEPTHWISE_CONV2D validation
+      if (node->inputs->size != 3) return false;
+      for (int i = 0; i < 2; ++i) {
+        auto& tensor = context->tensors[node->inputs->data[i]];
+        if (tensor.type != kTfLiteInt8) return false;
+      }
+      // Ensures bias tensor supports int32 type
+      auto& tensor = context->tensors[node->inputs->data[2]];
+      if (tensor.type != kTfLiteInt32) return false;
+      
+      dparams.delegated_nodes++;
+      return true;
+    } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+      // FULLY_CONNECTED validation
+      if (node->inputs->size < 2) return false;
+      auto& input_tensor = context->tensors[node->inputs->data[0]];
+      auto& weight_tensor = context->tensors[node->inputs->data[1]];
+      if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+        dparams.delegated_nodes++;
+        return true;
+      }
+      return false;
     }
-
-    // Ensures bias tensor is supports int32 type
-    auto& tensor = context->tensors[node->inputs->data[2]];
-    if (tensor.type != kTfLiteInt32) return false;
-
-    // Adds node for delegation
-    dparams.delegated_nodes++;
-    return true;
+    
+    // For other operation types, return false (not supported in fallback mode)
+    return false;
   }
 
   TfLiteStatus Initialize(TfLiteContext* context) override { return kTfLiteOk; }
