@@ -255,10 +255,19 @@ class LayerProfiler:
             
             # SystemC always writes to outputs/sa_sim.csv - copy it to our specific file immediately
             systemc_csv = f"{self.outputs_dir}/sa_sim.csv"
+            print(f"DEBUG: Checking SystemC CSV copy: {systemc_csv} -> {csv_output}")
+            print(f"DEBUG: SystemC CSV exists: {os.path.exists(systemc_csv)}")
+            print(f"DEBUG: Paths different: {csv_output != systemc_csv}")
+            
             if os.path.exists(systemc_csv) and csv_output != systemc_csv:
                 import shutil
                 shutil.copy2(systemc_csv, csv_output)
-                print(f"DEBUG: Copied SystemC CSV from {systemc_csv} to {csv_output}")
+                print(f"DEBUG: ✅ Copied SystemC CSV from {systemc_csv} to {csv_output}")
+            elif os.path.exists(systemc_csv):
+                print(f"DEBUG: ℹ️ Using SystemC CSV directly: {systemc_csv}")
+                csv_output = systemc_csv  # Use the SystemC file directly if copy failed
+            else:
+                print(f"DEBUG: ❌ No SystemC CSV found at {systemc_csv}")
             
             # Extract number of delegated layers from output
             num_delegated_layers = 0
