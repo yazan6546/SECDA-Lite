@@ -555,6 +555,22 @@ class SASimDelegate : public SimpleDelegateInterface {
         op_type = "DEPTHWISE_CONV_2D";
       } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
         op_type = "FULLY_CONNECTED";
+      } else if (registration->builtin_code == kTfLiteBuiltinAveragePool2d) {
+        op_type = "AVERAGE_POOL_2D";
+      } else if (registration->builtin_code == kTfLiteBuiltinMaxPool2d) {
+        op_type = "MAX_POOL_2D";
+      } else if (registration->builtin_code == kTfLiteBuiltinRelu) {
+        op_type = "RELU";
+      } else if (registration->builtin_code == kTfLiteBuiltinRelu6) {
+        op_type = "RELU6";
+      } else if (registration->builtin_code == kTfLiteBuiltinAdd) {
+        op_type = "ADD";
+      } else if (registration->builtin_code == kTfLiteBuiltinMul) {
+        op_type = "MUL";
+      } else if (registration->builtin_code == kTfLiteBuiltinReshape) {
+        op_type = "RESHAPE";
+      } else if (registration->builtin_code == kTfLiteBuiltinSoftmax) {
+        op_type = "SOFTMAX";
       }
       
       // Use BPSO decision instead of default logic
@@ -562,20 +578,56 @@ class SASimDelegate : public SimpleDelegateInterface {
           current_layer_id, op_type);
       
       if (bpso_decision) {
-        // BPSO says delegate this layer - still need to check basic compatibility
-        if (kTfLiteBuiltinConv2d != registration->builtin_code) return false;
+        // BPSO says delegate this layer - validate based on operation type
+        bool is_compatible = false;
         
-        // Check tensor types
-        if (node->inputs->size != 3) return false;
-        for (int i = 0; i < 2; ++i) {
-          auto& tensor = context->tensors[node->inputs->data[i]];
-          if (tensor.type != kTfLiteInt8) return false;
+        if (registration->builtin_code == kTfLiteBuiltinConv2d ||
+            registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
+          // CONV2D and DEPTHWISE_CONV2D validation
+          if (node->inputs->size == 3) {
+            // Check weights and input tensors are int8
+            bool valid_types = true;
+            for (int i = 0; i < 2; ++i) {
+              auto& tensor = context->tensors[node->inputs->data[i]];
+              if (tensor.type != kTfLiteInt8) {
+                valid_types = false;
+                break;
+              }
+            }
+            // Check bias tensor is int32
+            if (valid_types) {
+              auto& bias_tensor = context->tensors[node->inputs->data[2]];
+              if (bias_tensor.type == kTfLiteInt32) {
+                is_compatible = true;
+              }
+            }
+          }
+        } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+          // FULLY_CONNECTED validation
+          if (node->inputs->size >= 2) {
+            // Check input and weight tensors
+            auto& input_tensor = context->tensors[node->inputs->data[0]];
+            auto& weight_tensor = context->tensors[node->inputs->data[1]];
+            if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+              is_compatible = true;
+            }
+          }
+        } else {
+          // For other operation types, assume compatible for now
+          // TODO: Add more specific validation as needed
+          is_compatible = true;
         }
-        auto& tensor = context->tensors[node->inputs->data[2]];
-        if (tensor.type != kTfLiteInt32) return false;
         
-        dparams.delegated_nodes++;
-        return true;
+        if (is_compatible) {
+          dparams.delegated_nodes++;
+          std::cout << "BPSO: Delegating layer " << current_layer_id 
+                    << " (" << op_type << ") to SA accelerator" << std::endl;
+          return true;
+        } else {
+          std::cout << "BPSO: Layer " << current_layer_id << " (" << op_type 
+                    << ") marked for delegation but incompatible tensor types" << std::endl;
+          return false;
+        }
       } else {
         // BPSO says run on CPU - don't delegate
         return false;
