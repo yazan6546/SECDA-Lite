@@ -22,13 +22,13 @@ class BPSOPartitionOptimizer:
         self.num_layers = len(self.profiling_data)
         
         # Identify which layers are actually delegatable to SA accelerator
-        # SA accelerator only supports convolution operations
+        # SA accelerator supports convolution and fully connected operations (GEMM-based)
         self.delegatable_layers = []
         self.layer_characteristics = {}
         
         for i, row in self.profiling_data.iterrows():
             layer_type = row.get('layer_type', 'UNKNOWN')
-            is_delegatable = layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D']
+            is_delegatable = layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']
             self.delegatable_layers.append(is_delegatable)
             
             # Generate unique characteristics for each layer
@@ -43,7 +43,7 @@ class BPSOPartitionOptimizer:
         
         num_delegatable = sum(self.delegatable_layers)
         print(f"Total layers in model: {self.num_layers}")
-        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D): {num_delegatable}")
+        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D, FULLY_CONNECTED): {num_delegatable}")
         print(f"Non-delegatable layers: {self.num_layers - num_delegatable}")
         print(f"Layer types: {self.profiling_data['layer_type'].value_counts().to_dict()}")
         
@@ -109,7 +109,7 @@ class BPSOPartitionOptimizer:
                 efficiency = layer_chars['parallelization_efficiency']
                 memory_overhead = layer_chars['memory_intensity'] * 1.2  # Memory transfers cost more
                 
-                if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D']:
+                if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']:
                     # SA provides benefits but with diminishing returns and overhead
                     layer_energy = base_energy * (0.6 + 0.4 * (1 - efficiency)) * memory_overhead
                     thermal_cost += base_energy * layer_chars['thermal_impact'] * 0.3
@@ -300,7 +300,7 @@ class BPSOPartitionOptimizer:
         
         print(f"\n=== BPSO Partition Results ===")
         print(f"Total layers: {len(partition_data)}")
-        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D): {delegatable_count}")
+        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D, FULLY_CONNECTED): {delegatable_count}")
         print(f"SA Accelerator layers: {total_delegated} (all are delegatable: {delegated_delegatable == total_delegated})")
         print(f"CPU layers: {total_cpu}")
         print(f"Partition saved to: {output_csv}")

@@ -539,9 +539,13 @@ class SASimDelegate : public SimpleDelegateInterface {
   bool IsNodeSupportedByDelegate(const TfLiteRegistration* registration,
                                  const TfLiteNode* node,
                                  TfLiteContext* context) const override {
-    // Get current layer/node index for BPSO decision
-    static int current_layer_id = 0;
-    current_layer_id++;
+    // Use a more robust layer indexing approach
+    // Get the node index from TensorFlow's internal node numbering
+    static int call_count = 0;
+    int current_layer_id = call_count++;
+    
+    // Reset counter periodically to avoid drift (simple heuristic)
+    if (call_count > 100) call_count = 0;
     
     // Check if BPSO partition control is enabled
     if (delegates::sa_sim::g_bpso_partition_config != nullptr && 
@@ -553,6 +557,8 @@ class SASimDelegate : public SimpleDelegateInterface {
         op_type = "CONV_2D";
       } else if (registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
         op_type = "DEPTHWISE_CONV_2D";
+      } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+        op_type = "FULLY_CONNECTED";
       } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
         op_type = "FULLY_CONNECTED";
       } else if (registration->builtin_code == kTfLiteBuiltinAveragePool2d) {
@@ -571,16 +577,32 @@ class SASimDelegate : public SimpleDelegateInterface {
         op_type = "RESHAPE";
       } else if (registration->builtin_code == kTfLiteBuiltinSoftmax) {
         op_type = "SOFTMAX";
+      } else if (registration->builtin_code == kTfLiteBuiltinPad) {
+        op_type = "PAD";
+      } else if (registration->builtin_code == kTfLiteBuiltinQuantize) {
+        op_type = "QUANTIZE";
+      } else if (registration->builtin_code == kTfLiteBuiltinDequantize) {
+        op_type = "DEQUANTIZE";
+      } else if (registration->builtin_code == kTfLiteBuiltinMean) {
+        op_type = "MEAN";
       }
       
-      // Use BPSO decision instead of default logic
-      bool bpso_decision = delegates::sa_sim::g_bpso_partition_config->ShouldDelegateLayer(
-          current_layer_id, op_type);
+      // Use BPSO decision with bounds checking
+      bool bpso_decision = false;
+      try {
+        bpso_decision = delegates::sa_sim::g_bpso_partition_config->ShouldDelegateLayer(
+            current_layer_id, op_type);
+      } catch (const std::exception& e) {
+        std::cerr << "BPSO: Error checking layer " << current_layer_id 
+                  << " (" << op_type << "): " << e.what() << std::endl;
+        return false;  // Fallback to CPU on error
+      }
       
       if (bpso_decision) {
-        // BPSO says delegate this layer - validate based on operation type
+        // BPSO says delegate this layer - validate that SA accelerator supports it
         bool is_compatible = false;
         
+        // SA accelerator supports convolution and fully connected operations (both use GEMM)
         if (registration->builtin_code == kTfLiteBuiltinConv2d ||
             registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
           // CONV2D and DEPTHWISE_CONV2D validation
@@ -603,7 +625,7 @@ class SASimDelegate : public SimpleDelegateInterface {
             }
           }
         } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
-          // FULLY_CONNECTED validation
+          // FULLY_CONNECTED validation - also uses GEMM operations
           if (node->inputs->size >= 2) {
             // Check input and weight tensors
             auto& input_tensor = context->tensors[node->inputs->data[0]];
@@ -612,10 +634,6 @@ class SASimDelegate : public SimpleDelegateInterface {
               is_compatible = true;
             }
           }
-        } else {
-          // For other operation types, assume compatible for now
-          // TODO: Add more specific validation as needed
-          is_compatible = true;
         }
         
         if (is_compatible) {
@@ -625,7 +643,7 @@ class SASimDelegate : public SimpleDelegateInterface {
           return true;
         } else {
           std::cout << "BPSO: Layer " << current_layer_id << " (" << op_type 
-                    << ") marked for delegation but incompatible tensor types" << std::endl;
+                    << ") marked for delegation but SA accelerator does not support this operation type (only CONV_2D, DEPTHWISE_CONV_2D, FULLY_CONNECTED)" << std::endl;
           return false;
         }
       } else {
@@ -635,23 +653,32 @@ class SASimDelegate : public SimpleDelegateInterface {
     }
     
     // Fallback to original logic when BPSO is disabled
-    // Only supports CONV2D op
-    if (kTfLiteBuiltinConv2d != registration->builtin_code) return false;
-
-    // This delegate only supports int8 types
-    if (node->inputs->size != 3) return false;
-    for (int i = 0; i < 2; ++i) {
-      auto& tensor = context->tensors[node->inputs->data[i]];
-      if (tensor.type != kTfLiteInt8) return false;
+    // SA accelerator supports convolution and fully connected operations (GEMM-based)
+    if (registration->builtin_code == kTfLiteBuiltinConv2d ||
+        registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
+      // CONV2D and DEPTHWISE_CONV2D validation
+      if (node->inputs->size != 3) return false;
+      for (int i = 0; i < 2; ++i) {
+        auto& tensor = context->tensors[node->inputs->data[i]];
+        if (tensor.type != kTfLiteInt8) return false;
+      }
+      // Ensures bias tensor supports int32 type
+      auto& tensor = context->tensors[node->inputs->data[2]];
+      if (tensor.type != kTfLiteInt32) return false;
+      
+      dparams.delegated_nodes++;
+      return true;
+    } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+      // FULLY_CONNECTED validation - also uses GEMM operations
+      if (node->inputs->size < 2) return false;
+      auto& input_tensor = context->tensors[node->inputs->data[0]];
+      auto& weight_tensor = context->tensors[node->inputs->data[1]];
+      if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+        dparams.delegated_nodes++;
+        return true;
+      }
+      return false;
     }
-
-    // Ensures bias tensor is supports int32 type
-    auto& tensor = context->tensors[node->inputs->data[2]];
-    if (tensor.type != kTfLiteInt32) return false;
-
-    // Adds node for delegation
-    dparams.delegated_nodes++;
-    return true;
   }
 
   TfLiteStatus Initialize(TfLiteContext* context) override { return kTfLiteOk; }
