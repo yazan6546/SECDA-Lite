@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 """
-PBSO (Population-Based Swarm Optimization) with DAG modeling for static DNN partiticlass StaticStaticPBSOOptimizer:
-    """Population-Based Swarm Optimization for static CPU vs SA accelerator partitioning"""
-    
-    def __init__(self, dag_model: StaticStaticDNNGraphModel, swarm_size: int = 50):g
+PBSO (Population-Based Swarm Optimization) with DAG modeling for static DNN partitioning.
 Static CPU vs SA (Systolic Array) accelerator partitioning only
 Requires per-layer profiling data for accurate optimization
 """
@@ -143,8 +140,8 @@ class StaticPBSOOptimizer:
             layer = self.dag_model.layers[layer_id]
             if unit == 'cpu':
                 execution_costs[unit] += layer.cpu_cycles
-            elif unit == 'systemc_delegate':
-                execution_costs[unit] += layer.systemc_delegate_cycles
+            elif unit == 'sa_accelerator':
+                execution_costs[unit] += layer.sa_accelerator_cycles
         
         # Calculate communication costs
         comm_cost = self.dag_model.calculate_communication_cost(partition_dict)
@@ -168,16 +165,16 @@ class StaticPBSOOptimizer:
         """Calculate penalty for memory constraint violations"""
         memory_limits = {
             'cpu': 8192,      # 8GB
-            'systemc_delegate': 2048,  # 2GB SystemC delegate memory
+            'sa_accelerator': 2048,  # 2GB SA accelerator memory
         }
         
         memory_usage = {unit: 0 for unit in self.dag_model.processing_units}
         
         for layer_id, unit in partition_dict.items():
             layer = self.dag_model.layers[layer_id]
-            memory_usage[unit] += (layer.input_memory + 
-                                 layer.output_memory + 
-                                 layer.weight_memory)
+            memory_usage[unit] += (layer.input_tensor_size + 
+                                 layer.output_tensor_size + 
+                                 layer.weight_size)
         
         penalty = 0
         for unit, usage in memory_usage.items():
@@ -242,7 +239,7 @@ def load_per_layer_profiling_data(csv_file: str) -> StaticDNNGraphModel:
             layer_name=row['layer_name'],
             layer_type=row['layer_type'],
             cpu_cycles=row['cpu_cycles'],
-            systemc_delegate_cycles=row['accelerator_cycles'],
+            sa_accelerator_cycles=int(row['sa_accelerator_cycles']),
             input_memory=row['input_memory_kb'] * 1024,
             output_memory=row['output_memory_kb'] * 1024,
             weight_memory=row['weight_memory_kb'] * 1024,
@@ -339,10 +336,8 @@ def run_pbso_partitioning(profiling_csv: str) -> Dict:
         layer = dag_model.layers[layer_id]
         if unit == 'cpu':
             execution_costs[unit] += layer.cpu_cycles
-        elif unit == 'accelerator':
-            execution_costs[unit] += layer.accelerator_cycles
-        elif unit == 'gpu':
-            execution_costs[unit] += layer.gpu_cycles
+        elif unit == 'sa_accelerator':
+            execution_costs[unit] += layer.sa_accelerator_cycles
     
     comm_cost = dag_model.calculate_communication_cost(partition_dict)
     

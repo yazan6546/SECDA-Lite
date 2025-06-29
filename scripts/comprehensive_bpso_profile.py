@@ -166,6 +166,13 @@ class BPSOWorkflowProfiler:
         profile_name = model_name.replace('.tflite', '') + profile_suffix
         print(f"DEBUG: Running per-layer profiling for {profile_name} in {delegate_mode} mode...")
         
+        # Since per_layer_profiling.py doesn't support command-line args, we need to:
+        # 1. Temporarily modify the model and delegate in the script
+        # 2. Or call it directly and handle different modes differently
+        
+        # For now, let's use the existing per_layer_profiling.py as-is and 
+        # create different delegation patterns by modifying the delegate behavior
+        
         # Change to the workspace directory and run per_layer_profiling
         original_dir = os.getcwd()
         try:
@@ -178,24 +185,25 @@ class BPSOWorkflowProfiler:
             
             profiler = LayerProfiler()
             
-            # Determine delegate type and CSV suffix based on mode
+            # Determine delegate type based on mode
             if delegate_mode == "baseline":
+                # For baseline, we'll simulate no delegation by using sa_sim but 
+                # modifying the results to show no delegation
                 delegate_type = "sa_sim"
-                csv_suffix = "_baseline"
                 simulate_no_delegation = True
             elif delegate_mode == "bpso":
-                delegate_type = "sa_sim"  # Will use BPSO config 
-                csv_suffix = "_bpso"
+                delegate_type = "sa_sim"  # Will use BPSO config if available
                 simulate_no_delegation = False
             else:  # default
                 delegate_type = "sa_sim"
-                csv_suffix = "_default"
                 simulate_no_delegation = False
             
-            print(f"  Using delegate_type: {delegate_type}, CSV suffix: {csv_suffix}, simulate_no_delegation: {simulate_no_delegation}")
+            print(f"  Using delegate_type: {delegate_type}, simulate_no_delegation: {simulate_no_delegation}")
             
-            # Profile the model with unique CSV output to avoid conflicts
-            profile_data = profiler.profile_model_per_layer(model_name, delegate_type, profile_name, csv_suffix)
+            # Profile the model with unique CSV suffix to avoid conflicts
+            csv_suffix = profile_suffix if profile_suffix else "_default"
+            profile_data = profiler.profile_model_per_layer(model_name, delegate_type, profile_name, 
+                                                          csv_suffix=csv_suffix)
             
             if simulate_no_delegation and profile_data:
                 # Modify the profile data to simulate no delegation (all CPU)
@@ -219,16 +227,6 @@ class BPSOWorkflowProfiler:
             
         finally:
             os.chdir(original_dir)
-        
-        # Load the generated JSON file
-        json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
-        print(f"  DEBUG: Looking for JSON file: {json_file}")
-        json_data = self.load_json_profile(json_file)
-        
-        if json_data:
-            return self.aggregate_json_metrics(json_data)
-        else:
-            return {}
         
         # Load the generated JSON file
         json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
@@ -341,6 +339,49 @@ class BPSOWorkflowProfiler:
         return results
 
     def run_bpso_modified_profiling(self, model_name, profile_suffix, bpso_config_path):
+        """Run per-layer profiling with BPSO configuration"""
+        profile_name = model_name.replace('.tflite', '') + profile_suffix
+        print(f"DEBUG: Running BPSO-modified profiling for {profile_name}...")
+        
+        # Use the direct profiler approach with BPSO config
+        original_dir = os.getcwd()
+        try:
+            os.chdir(self.workspace_dir)
+            
+            # Import the profiler
+            import sys
+            sys.path.append('scripts')
+            from per_layer_profiling import LayerProfiler
+            
+            profiler = LayerProfiler()
+            
+            # Run profiling with BPSO config and unique CSV suffix
+            print(f"  Running profiling with BPSO config: {bpso_config_path}")
+            profile_data = profiler.profile_model_per_layer(
+                model_name, 
+                "sa_sim", 
+                profile_name,
+                csv_suffix=profile_suffix,
+                bpso_config_path=bpso_config_path
+            )
+            
+            if profile_data:
+                # Generate the report
+                report_file = profiler.generate_partitioning_report(profile_data)
+                print(f"  BPSO profile report generated: {report_file}")
+                
+        finally:
+            os.chdir(original_dir)
+        
+        # Load the generated JSON file
+        json_file = f"{self.results_dir}/{profile_name}_partitioning_profile.json"
+        print(f"  DEBUG: Looking for BPSO JSON file: {json_file}")
+        json_data = self.load_json_profile(json_file)
+        
+        if json_data:
+            return self.aggregate_json_metrics(json_data)
+        else:
+            return {}
         """Run per-layer profiling and modify results based on BPSO configuration"""
         profile_name = model_name.replace('.tflite', '') + profile_suffix
         print(f"DEBUG: Running BPSO-modified profiling for {profile_name}...")
