@@ -645,12 +645,6 @@ class SASimDelegate : public SimpleDelegateInterface {
     }
     // All other operations must run on CPU
     return false;
-      }
-      return false;
-    }
-    
-    // For other operation types, return false (not supported in fallback mode)
-    return false;
   }
 
   TfLiteStatus Initialize(TfLiteContext* context) override { return kTfLiteOk; }
