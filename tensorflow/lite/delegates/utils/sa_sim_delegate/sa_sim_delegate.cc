@@ -578,9 +578,10 @@ class SASimDelegate : public SimpleDelegateInterface {
           current_layer_id, op_type);
       
       if (bpso_decision) {
-        // BPSO says delegate this layer - validate based on operation type
+        // BPSO says delegate this layer - validate that SA accelerator supports it
         bool is_compatible = false;
         
+        // SA accelerator only supports convolution-like operations currently
         if (registration->builtin_code == kTfLiteBuiltinConv2d ||
             registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
           // CONV2D and DEPTHWISE_CONV2D validation
@@ -602,21 +603,10 @@ class SASimDelegate : public SimpleDelegateInterface {
               }
             }
           }
-        } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
-          // FULLY_CONNECTED validation
-          if (node->inputs->size >= 2) {
-            // Check input and weight tensors
-            auto& input_tensor = context->tensors[node->inputs->data[0]];
-            auto& weight_tensor = context->tensors[node->inputs->data[1]];
-            if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
-              is_compatible = true;
-            }
-          }
-        } else {
-          // For other operation types, assume compatible for now
-          // TODO: Add more specific validation as needed
-          is_compatible = true;
-        }
+        } 
+        // NOTE: SA accelerator does not support other operations like FULLY_CONNECTED,
+        // pooling, activation functions etc. - these must run on CPU
+        // The current accelerator implementation assumes convolution workloads only
         
         if (is_compatible) {
           dparams.delegated_nodes++;
@@ -625,17 +615,19 @@ class SASimDelegate : public SimpleDelegateInterface {
           return true;
         } else {
           std::cout << "BPSO: Layer " << current_layer_id << " (" << op_type 
-                    << ") marked for delegation but incompatible tensor types" << std::endl;
+                    << ") marked for delegation but SA accelerator does not support this operation type" << std::endl;
           return false;
         }
       } else {
         // BPSO says run on CPU - don't delegate
+        std::cout << "BPSO: Running layer " << current_layer_id 
+                  << " (" << op_type << ") on CPU" << std::endl;
         return false;
       }
     }
     
     // Fallback to original logic when BPSO is disabled
-    // Support multiple operation types with appropriate validation
+    // SA accelerator only supports convolution operations
     if (registration->builtin_code == kTfLiteBuiltinConv2d ||
         registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
       // CONV2D and DEPTHWISE_CONV2D validation
@@ -650,14 +642,9 @@ class SASimDelegate : public SimpleDelegateInterface {
       
       dparams.delegated_nodes++;
       return true;
-    } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
-      // FULLY_CONNECTED validation
-      if (node->inputs->size < 2) return false;
-      auto& input_tensor = context->tensors[node->inputs->data[0]];
-      auto& weight_tensor = context->tensors[node->inputs->data[1]];
-      if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
-        dparams.delegated_nodes++;
-        return true;
+    }
+    // All other operations must run on CPU
+    return false;
       }
       return false;
     }
