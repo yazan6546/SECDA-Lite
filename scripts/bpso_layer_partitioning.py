@@ -32,43 +32,45 @@ class BPSOPartitionOptimizer:
     
     def evaluate_partition(self, binary_partition: np.ndarray) -> float:
         """
-        Evaluate partition quality using multi-objective function
+        Evaluate partition quality using energy-optimized cost function
         
         Args:
             binary_partition: Binary array where 0=CPU, 1=SA_Accelerator
             
         Returns:
-            Fitness score (lower is better)
+            Fitness score (lower is better) - optimized for energy efficiency
         """
-        total_cost = 0.0
+        total_energy_cost = 0.0
         communication_cost = 0.0
-        load_imbalance = 0.0
-        
-        cpu_cycles = 0
-        sa_cycles = 0
         
         for i, partition_decision in enumerate(binary_partition):
             if i >= len(self.profiling_data):
                 break
                 
             row = self.profiling_data.iloc[i]
+            layer_type = row.get('layer_type', 'UNKNOWN')
             
             if partition_decision == 0:  # CPU
-                cpu_cycles += row.get('cpu_cycles', 1000)
+                # Use CPU energy cost (higher for compute-intensive ops)
+                layer_energy = row.get('cpu_energy_nj', row.get('cpu_cycles', 1000) * 2.0)
             else:  # SA Accelerator
-                sa_cycles += row.get('sa_accelerator_cycles', 300)
+                # Use SA accelerator energy cost (lower for compute-intensive ops)
+                layer_energy = row.get('sa_energy_nj', row.get('sa_accelerator_cycles', 300) * 1.5)
                 
-            # Communication cost between adjacent layers on different units
+                # SA accelerator is most efficient for compute-intensive operations
+                if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']:
+                    layer_energy *= 0.6  # 40% energy reduction for suitable ops
+                else:
+                    layer_energy *= 1.8  # 80% energy penalty for unsuitable ops (delegation overhead)
+            
+            total_energy_cost += layer_energy
+                
+            # Communication cost between adjacent layers on different devices
             if i > 0 and binary_partition[i] != binary_partition[i-1]:
-                communication_cost += row.get('transfer_overhead_cycles', 100)
+                communication_cost += row.get('transfer_overhead_cycles', 100) * 0.5  # Energy cost of transfers
         
-        # Calculate load imbalance penalty
-        max_execution_time = max(cpu_cycles, sa_cycles)
-        min_execution_time = min(cpu_cycles, sa_cycles) + 1  # Avoid division by zero
-        load_imbalance = max_execution_time / min_execution_time
-        
-        # Multi-objective cost function
-        total_cost = max_execution_time + communication_cost * 2.0 + load_imbalance * 1000
+        # Total cost optimized for energy efficiency
+        total_cost = total_energy_cost + communication_cost * 2.0
         
         return total_cost
     
