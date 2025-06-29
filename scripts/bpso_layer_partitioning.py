@@ -214,7 +214,7 @@ def main():
     print(f"3. The delegate will use BPSO decisions instead of default Conv2D delegation")
     
     # Save binary partition vector for programmatic use
-    binary_vector_path = "../outputs/bpso_binary_partition.txt"
+    binary_vector_path = "outputs/bpso_binary_partition.txt"
     np.savetxt(binary_vector_path, optimal_partition, fmt='%d')
     print(f"4. Binary partition vector saved to: {binary_vector_path}")
 
