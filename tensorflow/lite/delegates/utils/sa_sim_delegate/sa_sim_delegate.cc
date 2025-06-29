@@ -540,12 +540,17 @@ class SASimDelegate : public SimpleDelegateInterface {
                                  const TfLiteNode* node,
                                  TfLiteContext* context) const override {
     // Use a more robust layer indexing approach
-    // Get the node index from TensorFlow's internal node numbering
+    // Reset counter at the start of each model (heuristic based on delegate resets)
     static int call_count = 0;
-    int current_layer_id = call_count++;
+    static int last_delegated_count = 0;
     
-    // Reset counter periodically to avoid drift (simple heuristic)
-    if (call_count > 100) call_count = 0;
+    // Detect if this is a new model inference (delegate counter reset)
+    if (dparams.delegated_nodes < last_delegated_count) {
+      call_count = 0;  // Reset our counter when delegate counter resets
+    }
+    last_delegated_count = dparams.delegated_nodes;
+    
+    int current_layer_id = call_count++;
     
     // Check if BPSO partition control is enabled
     if (delegates::sa_sim::g_bpso_partition_config != nullptr && 
@@ -557,8 +562,6 @@ class SASimDelegate : public SimpleDelegateInterface {
         op_type = "CONV_2D";
       } else if (registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
         op_type = "DEPTHWISE_CONV_2D";
-      } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
-        op_type = "FULLY_CONNECTED";
       } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
         op_type = "FULLY_CONNECTED";
       } else if (registration->builtin_code == kTfLiteBuiltinAveragePool2d) {
@@ -606,10 +609,14 @@ class SASimDelegate : public SimpleDelegateInterface {
         if (registration->builtin_code == kTfLiteBuiltinConv2d ||
             registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
           // CONV2D and DEPTHWISE_CONV2D validation
-          if (node->inputs->size == 3) {
+          if (node->inputs->size >= 3) {
             // Check weights and input tensors are int8
             bool valid_types = true;
             for (int i = 0; i < 2; ++i) {
+              if (node->inputs->data[i] < 0 || node->inputs->data[i] >= context->tensors_size) {
+                valid_types = false;
+                break;
+              }
               auto& tensor = context->tensors[node->inputs->data[i]];
               if (tensor.type != kTfLiteInt8) {
                 valid_types = false;
@@ -617,7 +624,7 @@ class SASimDelegate : public SimpleDelegateInterface {
               }
             }
             // Check bias tensor is int32
-            if (valid_types) {
+            if (valid_types && node->inputs->data[2] >= 0 && node->inputs->data[2] < context->tensors_size) {
               auto& bias_tensor = context->tensors[node->inputs->data[2]];
               if (bias_tensor.type == kTfLiteInt32) {
                 is_compatible = true;
@@ -627,11 +634,14 @@ class SASimDelegate : public SimpleDelegateInterface {
         } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
           // FULLY_CONNECTED validation - also uses GEMM operations
           if (node->inputs->size >= 2) {
-            // Check input and weight tensors
-            auto& input_tensor = context->tensors[node->inputs->data[0]];
-            auto& weight_tensor = context->tensors[node->inputs->data[1]];
-            if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
-              is_compatible = true;
+            // Check input and weight tensors with bounds checking
+            if (node->inputs->data[0] >= 0 && node->inputs->data[0] < context->tensors_size &&
+                node->inputs->data[1] >= 0 && node->inputs->data[1] < context->tensors_size) {
+              auto& input_tensor = context->tensors[node->inputs->data[0]];
+              auto& weight_tensor = context->tensors[node->inputs->data[1]];
+              if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+                is_compatible = true;
+              }
             }
           }
         }
@@ -656,29 +666,47 @@ class SASimDelegate : public SimpleDelegateInterface {
     // SA accelerator supports convolution and fully connected operations (GEMM-based)
     if (registration->builtin_code == kTfLiteBuiltinConv2d ||
         registration->builtin_code == kTfLiteBuiltinDepthwiseConv2d) {
-      // CONV2D and DEPTHWISE_CONV2D validation
-      if (node->inputs->size != 3) return false;
-      for (int i = 0; i < 2; ++i) {
-        auto& tensor = context->tensors[node->inputs->data[i]];
-        if (tensor.type != kTfLiteInt8) return false;
-      }
-      // Ensures bias tensor supports int32 type
-      auto& tensor = context->tensors[node->inputs->data[2]];
-      if (tensor.type != kTfLiteInt32) return false;
-      
-      dparams.delegated_nodes++;
-      return true;
-    } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
-      // FULLY_CONNECTED validation - also uses GEMM operations
-      if (node->inputs->size < 2) return false;
-      auto& input_tensor = context->tensors[node->inputs->data[0]];
-      auto& weight_tensor = context->tensors[node->inputs->data[1]];
-      if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+      // CONV2D and DEPTHWISE_CONV2D validation with bounds checking
+      if (node->inputs->size >= 3) {
+        bool valid_tensors = true;
+        for (int i = 0; i < 3; ++i) {
+          if (node->inputs->data[i] < 0 || node->inputs->data[i] >= context->tensors_size) {
+            valid_tensors = false;
+            break;
+          }
+        }
+        if (!valid_tensors) return false;
+        
+        for (int i = 0; i < 2; ++i) {
+          auto& tensor = context->tensors[node->inputs->data[i]];
+          if (tensor.type != kTfLiteInt8) return false;
+        }
+        // Ensures bias tensor supports int32 type
+        auto& tensor = context->tensors[node->inputs->data[2]];
+        if (tensor.type != kTfLiteInt32) return false;
+        
         dparams.delegated_nodes++;
         return true;
       }
+    } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+      // FULLY_CONNECTED validation - also uses GEMM operations
+      if (node->inputs->size >= 2) {
+        // Bounds checking
+        if (node->inputs->data[0] >= 0 && node->inputs->data[0] < context->tensors_size &&
+            node->inputs->data[1] >= 0 && node->inputs->data[1] < context->tensors_size) {
+          auto& input_tensor = context->tensors[node->inputs->data[0]];
+          auto& weight_tensor = context->tensors[node->inputs->data[1]];
+          if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+            dparams.delegated_nodes++;
+            return true;
+          }
+        }
+      }
       return false;
     }
+    
+    // All other operations must run on CPU
+    return false;
   }
 
   TfLiteStatus Initialize(TfLiteContext* context) override { return kTfLiteOk; }
