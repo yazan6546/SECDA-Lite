@@ -20,6 +20,11 @@ class BPSOPartitionOptimizer:
         """Initialize BPSO optimizer with profiling data"""
         self.profiling_data = pd.read_csv(profiling_data_path)
         self.num_layers = len(self.profiling_data)
+        
+        print(f"Total layers in model: {self.num_layers}")
+        print(f"All layers are delegatable for optimization")
+        print(f"Layer types: {self.profiling_data['layer_type'].value_counts().to_dict()}")
+        
         self.num_particles = 20
         self.max_iterations = 50
         self.w = 0.5  # Inertia weight
@@ -51,26 +56,29 @@ class BPSOPartitionOptimizer:
             layer_type = row.get('layer_type', 'UNKNOWN')
             
             if partition_decision == 0:  # CPU
-                # Use CPU energy cost (higher for compute-intensive ops)
+                # Use CPU energy cost
                 layer_energy = row.get('cpu_energy_nj', row.get('cpu_cycles', 1000) * 2.0)
+                
             else:  # SA Accelerator
-                # Use SA accelerator energy cost (lower for compute-intensive ops)
+                # Use SA accelerator energy cost
                 layer_energy = row.get('sa_energy_nj', row.get('sa_accelerator_cycles', 300) * 1.5)
                 
-                # SA accelerator is most efficient for compute-intensive operations
+                # SA accelerator provides energy savings for most operations
                 if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']:
-                    layer_energy *= 0.6  # 40% energy reduction for suitable ops
+                    layer_energy *= 0.3  # 70% energy reduction for compute-intensive ops
+                elif layer_type in ['RELU', 'RELU6', 'ADD', 'MUL']:
+                    layer_energy *= 0.8  # 20% energy reduction for element-wise ops  
                 else:
-                    layer_energy *= 1.8  # 80% energy penalty for unsuitable ops (delegation overhead)
+                    layer_energy *= 1.1  # 10% energy penalty for other ops (small overhead)
             
             total_energy_cost += layer_energy
                 
             # Communication cost between adjacent layers on different devices
             if i > 0 and binary_partition[i] != binary_partition[i-1]:
-                communication_cost += row.get('transfer_overhead_cycles', 100) * 0.5  # Energy cost of transfers
+                communication_cost += row.get('transfer_overhead_cycles', 100) * 0.3
         
         # Total cost optimized for energy efficiency
-        total_cost = total_energy_cost + communication_cost * 2.0
+        total_cost = total_energy_cost + communication_cost * 1.5
         
         return total_cost
     
@@ -137,42 +145,48 @@ class BPSOPartitionOptimizer:
         
         partition_data = []
         
-        for i, partition_decision in enumerate(binary_partition):
-            if i < len(self.profiling_data):
-                row = self.profiling_data.iloc[i]
+        for i in range(len(self.profiling_data)):
+            row = self.profiling_data.iloc[i]
+            layer_type = row.get('layer_type', 'UNKNOWN')
+            
+            # Use BPSO decision for all layers
+            if i < len(binary_partition):
+                partition_decision = int(binary_partition[i])
+            else:
+                partition_decision = 0  # Default to CPU if no decision available
                 
-                partition_data.append({
-                    'layer_id': i,
-                    'layer_type': row.get('layer_type', 'UNKNOWN'),
-                    'partition_decision': int(partition_decision),  # 0=CPU, 1=SA_Accelerator
-                    'cpu_cycles': row.get('cpu_cycles', 1000),
-                    'sa_accelerator_cycles': row.get('sa_accelerator_cycles', 300),
-                    'communication_cost': row.get('transfer_overhead_cycles', 100)
-                })
+            partition_data.append({
+                'layer_id': i,
+                'layer_type': layer_type,
+                'partition_decision': partition_decision,  # 0=CPU, 1=SA_Accelerator
+                'cpu_cycles': row.get('cpu_cycles', 1000),
+                'sa_accelerator_cycles': row.get('sa_accelerator_cycles', 300),
+                'communication_cost': row.get('transfer_overhead_cycles', 100)
+            })
         
         # Save to CSV
         df = pd.DataFrame(partition_data)
         df.to_csv(output_csv, index=False)
         
         # Print summary
-        total_delegated = sum(binary_partition)
-        total_cpu = len(binary_partition) - total_delegated
+        total_delegated = sum([1 for item in partition_data if item['partition_decision'] == 1])
+        total_cpu = len(partition_data) - total_delegated
         
         print(f"\n=== BPSO Partition Results ===")
-        print(f"Total layers: {len(binary_partition)}")
+        print(f"Total layers: {len(partition_data)}")
         print(f"SA Accelerator layers: {total_delegated}")
         print(f"CPU layers: {total_cpu}")
         print(f"Partition saved to: {output_csv}")
         
         # Show first 10 layer assignments
         print(f"\nFirst 10 layer assignments:")
-        for i in range(min(10, len(binary_partition))):
-            unit = "SA_ACCELERATOR" if binary_partition[i] == 1 else "CPU"
-            layer_type = self.profiling_data.iloc[i].get('layer_type', 'UNKNOWN') if i < len(self.profiling_data) else 'UNKNOWN'
-            print(f"  Layer {i} ({layer_type}) -> {unit}")
+        for i in range(min(10, len(partition_data))):
+            item = partition_data[i]
+            unit = "SA_ACCELERATOR" if item['partition_decision'] == 1 else "CPU"
+            print(f"  Layer {i} ({item['layer_type']}) -> {unit}")
         
-        if len(binary_partition) > 10:
-            print(f"  ... and {len(binary_partition) - 10} more layers")
+        if len(partition_data) > 10:
+            print(f"  ... and {len(partition_data) - 10} more layers")
         
         return partition_data
 
