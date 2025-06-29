@@ -650,8 +650,6 @@ class SASimDelegate : public SimpleDelegateInterface {
                   << " (" << op_type << ") on CPU (per-node decision)" << std::endl;
         return false;
       }
-        return false;
-      }
     }
     
     // Fallback to original logic when BPSO is disabled
