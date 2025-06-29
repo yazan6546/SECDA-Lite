@@ -543,6 +543,15 @@ class SASimDelegate : public SimpleDelegateInterface {
     // This ensures the same layer gets the same ID between profiling and delegation
     static std::vector<const TfLiteNode*> processed_nodes;
     static int total_nodes_seen = 0;
+    static TfLiteContext* last_context = nullptr;
+    
+    // Reset static state if we're processing a new model (new context)
+    if (context != last_context) {
+      processed_nodes.clear();
+      total_nodes_seen = 0;
+      last_context = context;
+      std::cout << "DELEGATE: Reset layer indexing for new model" << std::endl;
+    }
     
     // Find if we've seen this node before, or assign new ID
     int current_layer_id = -1;
