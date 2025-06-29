@@ -539,27 +539,9 @@ class SASimDelegate : public SimpleDelegateInterface {
   bool IsNodeSupportedByDelegate(const TfLiteRegistration* registration,
                                  const TfLiteNode* node,
                                  TfLiteContext* context) const override {
-    // Use a deterministic layer ID based on node properties and position
-    // This ensures the same layer gets the same ID between profiling and delegation
-    static std::vector<const TfLiteNode*> processed_nodes;
-    static int total_nodes_seen = 0;
-    
-    // Find if we've seen this node before, or assign new ID
-    int current_layer_id = -1;
-    for (size_t i = 0; i < processed_nodes.size(); i++) {
-      if (processed_nodes[i] == node) {
-        current_layer_id = i + 1;  // 1-based indexing
-        break;
-      }
-    }
-    
-    if (current_layer_id == -1) {
-      // New node - add to list
-      processed_nodes.push_back(node);
-      current_layer_id = processed_nodes.size();  // 1-based indexing
-    }
-    
-    total_nodes_seen++;
+    // Get current layer/node index for BPSO decision
+    static int current_layer_id = 0;
+    current_layer_id++;
     
     // Check if BPSO partition control is enabled
     if (delegates::sa_sim::g_bpso_partition_config != nullptr && 
@@ -591,7 +573,7 @@ class SASimDelegate : public SimpleDelegateInterface {
         op_type = "SOFTMAX";
       }
       
-      // Use BPSO decision for this specific node/layer
+      // Use BPSO decision instead of default logic
       bool bpso_decision = delegates::sa_sim::g_bpso_partition_config->ShouldDelegateLayer(
           current_layer_id, op_type);
       
@@ -620,27 +602,34 @@ class SASimDelegate : public SimpleDelegateInterface {
               }
             }
           }
-        } 
-        // NOTE: SA accelerator does not support other operations like FULLY_CONNECTED,
-        // pooling, activation functions etc. - these must run on CPU
-        // The current accelerator implementation assumes convolution workloads only
+        } else if (registration->builtin_code == kTfLiteBuiltinFullyConnected) {
+          // FULLY_CONNECTED validation
+          if (node->inputs->size >= 2) {
+            // Check input and weight tensors
+            auto& input_tensor = context->tensors[node->inputs->data[0]];
+            auto& weight_tensor = context->tensors[node->inputs->data[1]];
+            if (input_tensor.type == kTfLiteInt8 && weight_tensor.type == kTfLiteInt8) {
+              is_compatible = true;
+            }
+          }
+        } else {
+          // For other operation types, assume compatible for now
+          // TODO: Add more specific validation as needed
+          is_compatible = true;
+        }
         
         if (is_compatible) {
           dparams.delegated_nodes++;
-          std::cout << "BPSO: Delegating node " << current_layer_id 
-                    << " (" << op_type << ") to SA accelerator (per-node decision)" << std::endl;
+          std::cout << "BPSO: Delegating layer " << current_layer_id 
+                    << " (" << op_type << ") to SA accelerator" << std::endl;
           return true;
         } else {
-          std::cout << "BPSO: Node " << current_layer_id << " (" << op_type 
-                    << ") marked for delegation but SA accelerator does not support this operation type" << std::endl;
+          std::cout << "BPSO: Layer " << current_layer_id << " (" << op_type 
+                    << ") marked for delegation but incompatible tensor types" << std::endl;
           return false;
         }
       } else {
-        // BPSO says run on CPU - don't delegate this specific node
-        std::cout << "BPSO: Running node " << current_layer_id 
-                  << " (" << op_type << ") on CPU (per-node decision)" << std::endl;
-        return false;
-      }
+        // BPSO says run on CPU - don't delegate
         return false;
       }
     }

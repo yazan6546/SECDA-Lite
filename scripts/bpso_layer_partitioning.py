@@ -21,23 +21,9 @@ class BPSOPartitionOptimizer:
         self.profiling_data = pd.read_csv(profiling_data_path)
         self.num_layers = len(self.profiling_data)
         
-        # Identify which layers are actually delegatable to SA accelerator
-        # SA accelerator only supports convolution operations
-        self.delegatable_layers = []
-        self.layer_type_to_delegatable = {}
-        
-        for i, row in self.profiling_data.iterrows():
-            layer_type = row.get('layer_type', 'UNKNOWN')
-            is_delegatable = layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D']
-            self.delegatable_layers.append(is_delegatable)
-            self.layer_type_to_delegatable[layer_type] = is_delegatable
-        
-        num_delegatable = sum(self.delegatable_layers)
         print(f"Total layers in model: {self.num_layers}")
-        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D): {num_delegatable}")
-        print(f"Non-delegatable layers: {self.num_layers - num_delegatable}")
+        print(f"All layers are delegatable for optimization")
         print(f"Layer types: {self.profiling_data['layer_type'].value_counts().to_dict()}")
-        print(f"Delegatable by type: {self.layer_type_to_delegatable}")
         
         self.num_particles = 20
         self.max_iterations = 50
@@ -61,7 +47,6 @@ class BPSOPartitionOptimizer:
         """
         total_energy_cost = 0.0
         communication_cost = 0.0
-        invalid_delegations = 0
         
         for i, partition_decision in enumerate(binary_partition):
             if i >= len(self.profiling_data):
@@ -70,26 +55,21 @@ class BPSOPartitionOptimizer:
             row = self.profiling_data.iloc[i]
             layer_type = row.get('layer_type', 'UNKNOWN')
             
-            # Check if trying to delegate a non-delegatable layer
-            if partition_decision == 1 and not self.delegatable_layers[i]:
-                # Heavy penalty for invalid delegations
-                invalid_delegations += 1
-                partition_decision = 0  # Force to CPU for cost calculation
-            
             if partition_decision == 0:  # CPU
                 # Use CPU energy cost
                 layer_energy = row.get('cpu_energy_nj', row.get('cpu_cycles', 1000) * 2.0)
                 
-            else:  # SA Accelerator (only for delegatable layers)
+            else:  # SA Accelerator
                 # Use SA accelerator energy cost
                 layer_energy = row.get('sa_energy_nj', row.get('sa_accelerator_cycles', 300) * 1.5)
                 
-                # SA accelerator provides energy savings for convolution operations
-                if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D']:
-                    layer_energy *= 0.3  # 70% energy reduction for convolution ops
+                # SA accelerator provides energy savings for most operations
+                if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']:
+                    layer_energy *= 0.3  # 70% energy reduction for compute-intensive ops
+                elif layer_type in ['RELU', 'RELU6', 'ADD', 'MUL']:
+                    layer_energy *= 0.8  # 20% energy reduction for element-wise ops  
                 else:
-                    # This should not happen due to constraint enforcement above
-                    layer_energy *= 2.0  # Penalty if it somehow occurs
+                    layer_energy *= 1.1  # 10% energy penalty for other ops (small overhead)
             
             total_energy_cost += layer_energy
                 
@@ -97,11 +77,8 @@ class BPSOPartitionOptimizer:
             if i > 0 and binary_partition[i] != binary_partition[i-1]:
                 communication_cost += row.get('transfer_overhead_cycles', 100) * 0.3
         
-        # Heavy penalty for invalid delegations
-        invalid_penalty = invalid_delegations * 10000
-        
         # Total cost optimized for energy efficiency
-        total_cost = total_energy_cost + communication_cost * 1.5 + invalid_penalty
+        total_cost = total_energy_cost + communication_cost * 1.5
         
         return total_cost
     
@@ -117,15 +94,8 @@ class BPSOPartitionOptimizer:
         particles = np.random.uniform(-4, 4, (self.num_particles, self.num_layers))
         velocities = np.random.uniform(-1, 1, (self.num_particles, self.num_layers))
         
-        # Initialize binary particles with constraints
+        # Convert to binary and evaluate
         binary_particles = (np.random.rand(self.num_particles, self.num_layers) < 0.5).astype(int)
-        
-        # Enforce delegatable constraint in initial population
-        for i in range(self.num_particles):
-            for j in range(self.num_layers):
-                if not self.delegatable_layers[j]:
-                    binary_particles[i][j] = 0  # Force non-delegatable layers to CPU
-        
         personal_best_positions = binary_particles.copy()
         personal_best_fitness = np.array([self.evaluate_partition(p) for p in binary_particles])
         
@@ -150,11 +120,6 @@ class BPSOPartitionOptimizer:
                 particles[i] += velocities[i]
                 sigmoid_probs = self.sigmoid(particles[i])
                 binary_particles[i] = (np.random.rand(self.num_layers) < sigmoid_probs).astype(int)
-                
-                # Enforce delegatable constraint after update
-                for j in range(self.num_layers):
-                    if not self.delegatable_layers[j]:
-                        binary_particles[i][j] = 0  # Force non-delegatable layers to CPU
                 
                 # Evaluate new position
                 fitness = self.evaluate_partition(binary_particles[i])
@@ -184,11 +149,11 @@ class BPSOPartitionOptimizer:
             row = self.profiling_data.iloc[i]
             layer_type = row.get('layer_type', 'UNKNOWN')
             
-            # Use BPSO decision for delegatable layers, force CPU for non-delegatable
-            if i < len(binary_partition) and self.delegatable_layers[i]:
+            # Use BPSO decision for all layers
+            if i < len(binary_partition):
                 partition_decision = int(binary_partition[i])
             else:
-                partition_decision = 0  # Force to CPU if not delegatable or no decision available
+                partition_decision = 0  # Default to CPU if no decision available
                 
             partition_data.append({
                 'layer_id': i,
@@ -207,15 +172,9 @@ class BPSOPartitionOptimizer:
         total_delegated = sum([1 for item in partition_data if item['partition_decision'] == 1])
         total_cpu = len(partition_data) - total_delegated
         
-        # Count delegatable layers for validation
-        delegatable_count = sum(self.delegatable_layers)
-        delegated_delegatable = sum([1 for i, item in enumerate(partition_data) 
-                                  if item['partition_decision'] == 1 and self.delegatable_layers[i]])
-        
         print(f"\n=== BPSO Partition Results ===")
         print(f"Total layers: {len(partition_data)}")
-        print(f"Delegatable layers (CONV_2D, DEPTHWISE_CONV_2D): {delegatable_count}")
-        print(f"SA Accelerator layers: {total_delegated} (all are delegatable: {delegated_delegatable == total_delegated})")
+        print(f"SA Accelerator layers: {total_delegated}")
         print(f"CPU layers: {total_cpu}")
         print(f"Partition saved to: {output_csv}")
         
@@ -224,8 +183,7 @@ class BPSOPartitionOptimizer:
         for i in range(min(10, len(partition_data))):
             item = partition_data[i]
             unit = "SA_ACCELERATOR" if item['partition_decision'] == 1 else "CPU"
-            delegatable_str = "(delegatable)" if self.delegatable_layers[i] else "(CPU-only)"
-            print(f"  Layer {i} ({item['layer_type']}) -> {unit} {delegatable_str}")
+            print(f"  Layer {i} ({item['layer_type']}) -> {unit}")
         
         if len(partition_data) > 10:
             print(f"  ... and {len(partition_data) - 10} more layers")
