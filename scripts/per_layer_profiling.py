@@ -207,7 +207,14 @@ class LayerProfiler:
             
         print(f"DEBUG: Starting profile_model_per_layer for {model_file} -> {model_name}")
         
-        model_path = f"{self.models_dir}/{model_file}"
+        # Handle absolute and relative model paths
+        if os.path.isabs(model_file):
+            model_path = model_file
+        elif model_file.startswith('models/'):
+            # Remove 'models/' prefix and add workspace models dir
+            model_path = f"{self.models_dir}/{model_file[7:]}"
+        else:
+            model_path = f"{self.models_dir}/{model_file}"
         
         # Handle different delegate types
         if delegate_type is None or delegate_type == 'baseline':
