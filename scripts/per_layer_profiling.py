@@ -105,12 +105,25 @@ class LayerProfiler:
         """Parse SystemC profiling CSV to extract per-layer metrics by aggregating SystemC simulation steps"""
         layer_metrics = {}
         
-        if not os.path.exists(csv_file):
-            print(f"Warning: Profiling CSV {csv_file} not found")
+        # Try the specified CSV file first, then fall back to the main SystemC CSV
+        csv_files_to_try = [csv_file]
+        if csv_file != f"{self.outputs_dir}/sa_sim.csv":
+            csv_files_to_try.append(f"{self.outputs_dir}/sa_sim.csv")
+        
+        actual_csv_file = None
+        for try_csv in csv_files_to_try:
+            if os.path.exists(try_csv) and os.path.getsize(try_csv) > 0:
+                actual_csv_file = try_csv
+                break
+        
+        if not actual_csv_file:
+            print(f"Warning: No valid SystemC profiling CSV found. Tried: {csv_files_to_try}")
             return layer_metrics
+        
+        print(f"DEBUG: Using SystemC CSV: {actual_csv_file}")
             
         try:
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(actual_csv_file)
             print(f"DEBUG: CSV has {len(df)} rows, aggregating for {num_delegated_layers} delegated layers")
             
             # Calculate metrics per layer by dividing total rows by number of delegated layers
