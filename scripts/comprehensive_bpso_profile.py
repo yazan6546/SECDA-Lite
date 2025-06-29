@@ -658,7 +658,7 @@ class BPSOWorkflowProfiler:
     def run_comprehensive_workflow(self, models=None):
         """Run the complete workflow for all models"""
         if models is None:
-            models = ["mobilenetv1.tflite", "mobilenetv2.tflite"]
+            models = ["mobilenetv1.tflite", "mobilenetv2.tflite", "resnet18v1.tflite", "resnet50v2.tflite"]
         
         print(f"\\n=== STARTING COMPREHENSIVE BPSO WORKFLOW ===")
         print(f"Models to process: {models}")
@@ -707,7 +707,8 @@ class BPSOWorkflowProfiler:
 def main():
     """Main function to run comprehensive BPSO profiling workflow"""
     parser = argparse.ArgumentParser(description="Comprehensive BPSO Workflow Profiler")
-    parser.add_argument("--models", nargs="+", default=["mobilenetv1.tflite"], 
+    parser.add_argument("--models", nargs="+", 
+                       default=["mobilenetv1.tflite", "mobilenetv2.tflite", "resnet18v1.tflite", "resnet50v2.tflite"], 
                        help="Models to profile")
     parser.add_argument("--workspace", default="/root/Workspace/tensorflow",
                        help="Workspace directory")

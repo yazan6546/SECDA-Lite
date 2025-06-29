@@ -235,22 +235,46 @@ class BPSOPartitionOptimizer:
 def main():
     """Main function to run BPSO optimization and generate partition config"""
     import sys
+    import argparse
     
-    # Handle command line arguments or use default paths
-    if len(sys.argv) > 1:
-        profiling_data_path = sys.argv[1]
+    parser = argparse.ArgumentParser(description="BPSO Layer Partitioning Optimization")
+    parser.add_argument("--model", default="mobilenetv1.tflite", 
+                       choices=["mobilenetv1.tflite", "mobilenetv2.tflite", "resnet18v1.tflite", "resnet50v2.tflite"],
+                       help="Model to optimize partitioning for")
+    parser.add_argument("--profiling_data", 
+                       help="Path to profiling data CSV (auto-detected if not provided)")
+    parser.add_argument("--output_config", default="outputs/bpso_partition_config.csv",
+                       help="Output path for partition configuration")
+    
+    # Parse command line arguments or use defaults for backward compatibility
+    if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
+        # Backward compatibility: if first arg doesn't start with --, treat as profiling data path
+        args = argparse.Namespace()
+        args.profiling_data = sys.argv[1]
+        args.model = "mobilenetv1.tflite" 
+        args.output_config = "outputs/bpso_partition_config.csv"
     else:
-        profiling_data_path = "outputs/pbso_dag_profiling.csv"  # Default path from workspace root
+        args = parser.parse_args()
+    
+    # Determine profiling data path
+    if args.profiling_data:
+        profiling_data_path = args.profiling_data
+    else:
+        # Auto-detect based on model name
+        model_name = args.model.replace('.tflite', '')
+        profiling_data_path = f"results/{model_name}_baseline_partitioning_metrics.csv"
     
     # Output path
-    partition_config_path = "outputs/bpso_partition_config.csv"
+    partition_config_path = args.output_config
     
     if not os.path.exists(profiling_data_path):
         print(f"Error: Profiling data not found: {profiling_data_path}")
-        print("Please run per_layer_profiling.py first to generate the profiling data")
+        print("Please run comprehensive profiling first to generate the partitioning metrics")
+        print(f"Example: python3 scripts/comprehensive_bpso_profile.py --models {args.model}")
         return
     
     print("=== BPSO Layer Partitioning Optimization ===")
+    print(f"Model: {args.model}")
     print(f"Loading profiling data from: {profiling_data_path}")
     
     # Initialize BPSO optimizer
@@ -261,18 +285,26 @@ def main():
     # Run BPSO optimization
     optimal_partition, best_fitness = optimizer.run_bpso_optimization()
     
-    # Generate partition configuration
+    # Generate partition configuration  
     partition_data = optimizer.generate_partition_config(optimal_partition, partition_config_path)
     
     print(f"\n=== How to Use BPSO Partition ===")
     print(f"1. Copy {partition_config_path} to your model directory")
     print(f"2. Run SA sim delegate with: --bpso_partition_config={partition_config_path}")
     print(f"3. The delegate will use BPSO decisions instead of default Conv2D delegation")
+    print(f"4. Model optimized: {args.model}")
     
     # Save binary partition vector for programmatic use
-    binary_vector_path = "outputs/bpso_binary_partition.txt"
+    model_name = args.model.replace('.tflite', '')
+    binary_vector_path = f"outputs/{model_name}_bpso_binary_partition.txt"
     np.savetxt(binary_vector_path, optimal_partition, fmt='%d')
-    print(f"4. Binary partition vector saved to: {binary_vector_path}")
+    print(f"5. Binary partition vector saved to: {binary_vector_path}")
+    
+    print(f"\n=== Multi-Model Usage ===")
+    print(f"To optimize other models:")
+    for model in ["mobilenetv1.tflite", "mobilenetv2.tflite", "resnet18v1.tflite", "resnet50v2.tflite"]:
+        if model != args.model:
+            print(f"  python3 scripts/bpso_layer_partitioning.py --model {model}")
 
 if __name__ == "__main__":
     main()
