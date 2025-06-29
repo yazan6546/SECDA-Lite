@@ -156,6 +156,11 @@ class BPSOPartitionOptimizer:
                     if not self.delegatable_layers[j]:
                         binary_particles[i][j] = 0  # Force non-delegatable layers to CPU
                 
+                # Enforce delegatable constraint after update
+                for j in range(self.num_layers):
+                    if not self.delegatable_layers[j]:
+                        binary_particles[i][j] = 0  # Force non-delegatable layers to CPU
+                
                 # Evaluate new position
                 fitness = self.evaluate_partition(binary_particles[i])
                 

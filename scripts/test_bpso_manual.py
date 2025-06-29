@@ -11,7 +11,7 @@ import sys
 def run_bpso_profiling_manual():
     """Run BPSO profiling manually and generate proper JSON"""
     
-    workspace_dir = "/root/Workspace/tensorflow"
+    workspace_dir = "/root/workspaces/SECDA-Lite"
     
     print("=== Manual BPSO Profiling Test ===")
     

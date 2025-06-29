@@ -467,7 +467,7 @@ def main():
     parser = argparse.ArgumentParser(description="Comprehensive BPSO Workflow Profiler")
     parser.add_argument("--models", nargs="+", default=["mobilenetv1.tflite"], 
                        help="Models to profile")
-    parser.add_argument("--workspace", default="/root/Workspace/tensorflow",
+    parser.add_argument("--workspace", default="/root/workspaces/SECDA-Lite",
                        help="Workspace directory")
     parser.add_argument("--test_single", action="store_true",
                        help="Test single model workflow")
