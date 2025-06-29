@@ -97,21 +97,33 @@ class BPSOPartitionOptimizer:
                 partition_decision = 0  # Force to CPU for cost calculation
             
             if partition_decision == 0:  # CPU
-                # Use CPU energy cost with layer-specific characteristics
-                base_energy = row.get('cpu_energy_nj', row.get('cpu_cycles', 1000) * 2.0)
+                # Use CPU energy cost from comprehensive profiling data
+                base_energy = row.get('energy_cost', 1000000)  # Use actual energy cost from profiling
                 layer_energy = base_energy * layer_chars['complexity_factor'] * layer_chars['cache_affinity']
                 
             else:  # SA Accelerator (only for delegatable layers)
-                # Use SA accelerator energy cost with realistic overheads
-                base_energy = row.get('sa_energy_nj', row.get('sa_accelerator_cycles', 300) * 1.5)
+                # Use SA accelerator energy cost with realistic benefits and overheads
+                base_energy = row.get('energy_cost', 1000000)  # Base energy from profiling
+                
+                # SA accelerator provides benefits for compute-intensive layers
+                compute_intensity = row.get('compute_intensity', 1.0)
+                total_gmacs = row.get('total_gmacs', 0)
+                # SA accelerator provides benefits for compute-intensive layers
+                compute_intensity = row.get('compute_intensity', 1.0)
+                total_gmacs = row.get('total_gmacs', 0)
                 
                 # SA accelerator efficiency varies per layer
                 efficiency = layer_chars['parallelization_efficiency']
                 memory_overhead = layer_chars['memory_intensity'] * 1.2  # Memory transfers cost more
                 
                 if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D', 'FULLY_CONNECTED']:
-                    # SA provides benefits but with diminishing returns and overhead
-                    layer_energy = base_energy * (0.6 + 0.4 * (1 - efficiency)) * memory_overhead
+                    # SA provides benefits for high-GMAC layers but with diminishing returns
+                    if total_gmacs > 1000:  # High compute layers benefit more
+                        energy_reduction = 0.3 + (0.4 * min(total_gmacs / 10000, 1.0))  # 30-70% reduction
+                    else:
+                        energy_reduction = 0.1  # Small layers get minimal benefit
+                    
+                    layer_energy = base_energy * (1.0 - energy_reduction) * memory_overhead
                     thermal_cost += base_energy * layer_chars['thermal_impact'] * 0.3
                 else:
                     # This should not happen due to constraint enforcement above
@@ -121,8 +133,8 @@ class BPSOPartitionOptimizer:
                 
             # Communication cost between adjacent layers on different devices
             if i > 0 and binary_partition[i] != binary_partition[i-1]:
-                # Communication overhead varies based on layer characteristics
-                comm_base = row.get('transfer_overhead_cycles', 100)
+                # Communication overhead varies based on actual communication cost from profiling
+                comm_base = row.get('communication_cost', 1000)
                 communication_cost += comm_base * layer_chars['memory_intensity'] * 0.5
         
         # SA accelerator setup and teardown overhead (makes small delegations inefficient)
@@ -329,14 +341,15 @@ def main():
     if len(sys.argv) > 1:
         profiling_data_path = sys.argv[1]
     else:
-        profiling_data_path = "outputs/sa_sim_model.csv"  # Default path from workspace root
+        # Use comprehensive partitioning metrics that include layer types and energy costs
+        profiling_data_path = "results/mobilenetv1_baseline_partitioning_metrics.csv"
     
     # Output path
     partition_config_path = "outputs/bpso_partition_config.csv"
     
     if not os.path.exists(profiling_data_path):
         print(f"Error: Profiling data not found: {profiling_data_path}")
-        print("Please run per_layer_profiling.py first to generate the profiling data")
+        print("Please run comprehensive profiling first to generate the partitioning metrics")
         return
     
     print("=== BPSO Layer Partitioning Optimization ===")
