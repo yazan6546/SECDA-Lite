@@ -59,7 +59,22 @@ class LayerProfiler:
         ]
         
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
+            # Use communicate() to avoid buffer deadlocks with large outputs
+            print(f"DEBUG: Running command: {' '.join(cmd)}")
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                     universal_newlines=True, cwd=self.workspace_dir)
+            stdout, stderr = process.communicate()
+            
+            # Create a result object similar to subprocess.run
+            class SubprocessResult:
+                def __init__(self, returncode, stdout, stderr):
+                    self.returncode = returncode
+                    self.stdout = stdout
+                    self.stderr = stderr
+            
+            result = SubprocessResult(process.returncode, stdout, stderr)
+            
+            # Initialize layers list
             layers = []
             
             # Parse the verbose output to extract layer information
@@ -264,7 +279,21 @@ class LayerProfiler:
                 print(f"  DEBUG: Added BPSO config: {bpso_config_path}")
         
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, cwd=self.workspace_dir)
+            # Use communicate() to avoid buffer deadlocks with large outputs
+            import subprocess
+            print(f"DEBUG: Running command: {' '.join(cmd)}")
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                     universal_newlines=True, cwd=self.workspace_dir)
+            stdout, stderr = process.communicate()
+            
+            # Create a result object similar to subprocess.run
+            class SubprocessResult:
+                def __init__(self, returncode, stdout, stderr):
+                    self.returncode = returncode
+                    self.stdout = stdout
+                    self.stderr = stderr
+            
+            result = SubprocessResult(process.returncode, stdout, stderr)
             print(f"DEBUG: Subprocess completed with return code: {result.returncode}")
             
             # SystemC always writes to outputs/sa_sim.csv - copy it to our specific file immediately
