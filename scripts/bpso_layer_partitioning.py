@@ -39,11 +39,21 @@ class BPSOPartitionOptimizer:
         print(f"Layer types: {self.profiling_data['layer_type'].value_counts().to_dict()}")
         print(f"Delegatable by type: {self.layer_type_to_delegatable}")
         
-        self.num_particles = 20
-        self.max_iterations = 50
-        self.w = 0.5  # Inertia weight
-        self.c1 = 2.0  # Cognitive parameter
+        # Enhanced BPSO parameters for better optimization
+        self.num_particles = 50  # Increased from 20 for better exploration
+        self.max_iterations = 200  # Increased from 50 for deeper search
+        self.min_iterations = 30  # Minimum iterations before early termination
+        
+        # Adaptive parameters that change during optimization
+        self.w_max = 0.9  # Maximum inertia weight (exploration)
+        self.w_min = 0.4  # Minimum inertia weight (exploitation)
+        self.c1 = 2.0  # Cognitive parameter 
         self.c2 = 2.0  # Social parameter
+        
+        # Advanced termination conditions
+        self.convergence_threshold = 1e-6  # Stop if improvement < threshold
+        self.stagnation_limit = 25  # Stop if no improvement for N iterations
+        self.target_fitness = None  # Will be set based on a target performance goal
         
     def sigmoid(self, x):
         """Sigmoid function for binary conversion"""
@@ -51,17 +61,23 @@ class BPSOPartitionOptimizer:
     
     def evaluate_partition(self, binary_partition: np.ndarray) -> float:
         """
-        Evaluate partition quality using energy-optimized cost function
+        Enhanced partition evaluation with realistic energy modeling and better cost function
         
         Args:
             binary_partition: Binary array where 0=CPU, 1=SA_Accelerator
             
         Returns:
-            Fitness score (lower is better) - optimized for energy efficiency
+            Fitness score (lower is better) - optimized for realistic energy efficiency
         """
         total_energy_cost = 0.0
         communication_cost = 0.0
+        setup_overhead_cost = 0.0
         invalid_delegations = 0
+        context_switch_cost = 0.0
+        
+        # Count SA accelerator delegations for overhead calculations
+        sa_delegated_count = sum([1 for i, decision in enumerate(binary_partition) 
+                                if decision == 1 and self.delegatable_layers[i]])
         
         for i, partition_decision in enumerate(binary_partition):
             if i >= len(self.profiling_data):
@@ -70,60 +86,110 @@ class BPSOPartitionOptimizer:
             row = self.profiling_data.iloc[i]
             layer_type = row.get('layer_type', 'UNKNOWN')
             
+            # Get realistic energy/cycle data from profiling
+            cpu_cycles = row.get('total_cycles', 1000)
+            energy_cost = row.get('energy_cost', cpu_cycles * 2.0)
+            
             # Check if trying to delegate a non-delegatable layer
             if partition_decision == 1 and not self.delegatable_layers[i]:
                 # Heavy penalty for invalid delegations
                 invalid_delegations += 1
                 partition_decision = 0  # Force to CPU for cost calculation
             
-            if partition_decision == 0:  # CPU
-                # Use CPU energy cost
-                layer_energy = row.get('cpu_energy_nj', row.get('cpu_cycles', 1000) * 2.0)
+            if partition_decision == 0:  # CPU execution
+                # CPU energy cost with realistic scaling
+                layer_energy = energy_cost
                 
-            else:  # SA Accelerator (only for delegatable layers)
-                # Use SA accelerator energy cost
-                layer_energy = row.get('sa_energy_nj', row.get('sa_accelerator_cycles', 300) * 1.5)
-                
-                # SA accelerator provides energy savings for convolution operations
+            else:  # SA Accelerator execution (only for delegatable layers)
+                # SA accelerator provides significant benefits for convolution operations
                 if layer_type in ['CONV_2D', 'DEPTHWISE_CONV_2D']:
-                    layer_energy *= 0.3  # 70% energy reduction for convolution ops
+                    # More realistic energy savings based on actual profiling data
+                    compute_cycles = row.get('compute_cycles', cpu_cycles * 0.6)
+                    total_gmacs = row.get('total_gmacs', 0)
+                    
+                    # Energy savings depend on computational complexity
+                    if total_gmacs > 1000:  # High-compute layers benefit more
+                        energy_reduction = 0.15  # 85% energy reduction for high-GMAC ops
+                    elif total_gmacs > 100:  # Medium-compute layers
+                        energy_reduction = 0.25  # 75% energy reduction
+                    else:  # Low-compute layers get less benefit
+                        energy_reduction = 0.4   # 60% energy reduction
+                    
+                    layer_energy = energy_cost * energy_reduction
+                    
+                    # Add realistic SA accelerator setup overhead per layer
+                    setup_overhead_cost += energy_cost * 0.02  # 2% overhead per delegated layer
                 else:
                     # This should not happen due to constraint enforcement above
-                    layer_energy *= 2.0  # Penalty if it somehow occurs
+                    layer_energy = energy_cost * 3.0  # Heavy penalty if it somehow occurs
             
             total_energy_cost += layer_energy
                 
-            # Communication cost between adjacent layers on different devices
+            # More realistic communication cost between adjacent layers on different devices
             if i > 0 and binary_partition[i] != binary_partition[i-1]:
-                communication_cost += row.get('transfer_overhead_cycles', 100) * 0.3
+                # Communication overhead varies based on layer output size and complexity
+                comm_base_cost = row.get('communication_cost', cpu_cycles * 0.1)
+                buffer_size = row.get('buffer_requirement', 1024)
+                
+                # Higher communication cost for larger tensors
+                communication_cost += comm_base_cost * (1.0 + buffer_size / 10000.0)
+                
+                # Context switching cost between CPU and SA accelerator
+                context_switch_cost += energy_cost * 0.05  # 5% context switch penalty
+        
+        # SA accelerator initialization overhead (makes small delegations inefficient)
+        if sa_delegated_count > 0:
+            setup_overhead_cost += energy_cost * 0.1 * sa_delegated_count  # Per-layer setup cost
+            setup_overhead_cost += 5000  # Fixed SA accelerator initialization cost
         
         # Heavy penalty for invalid delegations
-        invalid_penalty = invalid_delegations * 10000
+        invalid_penalty = invalid_delegations * 50000
         
-        # Total cost optimized for energy efficiency
-        total_cost = total_energy_cost + communication_cost * 1.5 + invalid_penalty
+        # Penalty for too few SA delegations (underutilization)
+        if sa_delegated_count < 3 and sa_delegated_count > 0:
+            setup_overhead_cost += 10000  # Penalty for underutilizing SA accelerator
+        
+        # Total cost with more realistic factors
+        total_cost = (total_energy_cost + 
+                     communication_cost * 2.0 +  # Communication is expensive
+                     setup_overhead_cost + 
+                     context_switch_cost +
+                     invalid_penalty)
         
         return total_cost
     
     def run_bpso_optimization(self) -> Tuple[np.ndarray, float]:
         """
-        Run Binary Particle Swarm Optimization
+        Enhanced Binary Particle Swarm Optimization with advanced termination conditions
         
         Returns:
             best_partition: Optimal binary partition
             best_fitness: Best fitness score achieved
         """
-        # Initialize particles
-        particles = np.random.uniform(-4, 4, (self.num_particles, self.num_layers))
-        velocities = np.random.uniform(-1, 1, (self.num_particles, self.num_layers))
+        print(f"Starting enhanced BPSO optimization...")
+        print(f"Particles: {self.num_particles}, Max iterations: {self.max_iterations}")
         
-        # Initialize binary particles with constraints
-        binary_particles = (np.random.rand(self.num_particles, self.num_layers) < 0.5).astype(int)
+        # Calculate CPU-only baseline for target setting
+        cpu_only_partition = np.zeros(self.num_layers, dtype=int)
+        cpu_baseline_fitness = self.evaluate_partition(cpu_only_partition)
+        self.target_fitness = cpu_baseline_fitness * 0.6  # Target 40% improvement over CPU-only
         
-        # Enforce delegatable constraint in initial population
+        print(f"CPU-only baseline fitness: {cpu_baseline_fitness:.2f}")
+        print(f"Target fitness (40% improvement): {self.target_fitness:.2f}")
+        
+        # Initialize particles with better strategy
+        particles = np.random.uniform(-6, 6, (self.num_particles, self.num_layers))
+        velocities = np.random.uniform(-2, 2, (self.num_particles, self.num_layers))
+        
+        # Initialize binary particles with smarter initialization
+        binary_particles = np.zeros((self.num_particles, self.num_layers), dtype=int)
+        
         for i in range(self.num_particles):
             for j in range(self.num_layers):
-                if not self.delegatable_layers[j]:
+                if self.delegatable_layers[j]:
+                    # Initialize delegatable layers with higher probability of delegation
+                    binary_particles[i][j] = 1 if np.random.rand() < 0.7 else 0
+                else:
                     binary_particles[i][j] = 0  # Force non-delegatable layers to CPU
         
         personal_best_positions = binary_particles.copy()
@@ -136,15 +202,26 @@ class BPSOPartitionOptimizer:
         
         print(f"Initial best fitness: {global_best_fitness:.2f}")
         
-        # BPSO iterations
+        # Advanced termination tracking
+        stagnation_count = 0
+        previous_best_fitness = global_best_fitness
+        fitness_history = [global_best_fitness]
+        
+        # BPSO iterations with adaptive parameters
         for iteration in range(self.max_iterations):
+            # Adaptive inertia weight (linearly decreasing from w_max to w_min)
+            w = self.w_max - (self.w_max - self.w_min) * iteration / self.max_iterations
+            
             for i in range(self.num_particles):
-                # Update velocity
+                # Update velocity with adaptive inertia weight
                 r1, r2 = np.random.rand(2)
                 
-                velocities[i] = (self.w * velocities[i] + 
+                velocities[i] = (w * velocities[i] + 
                                self.c1 * r1 * (personal_best_positions[i] - binary_particles[i]) +
                                self.c2 * r2 * (global_best_position - binary_particles[i]))
+                
+                # Velocity clamping to prevent explosion
+                velocities[i] = np.clip(velocities[i], -6, 6)
                 
                 # Update position using sigmoid
                 particles[i] += velocities[i]
@@ -168,11 +245,57 @@ class BPSOPartitionOptimizer:
                     if fitness < global_best_fitness:
                         global_best_fitness = fitness
                         global_best_position = binary_particles[i].copy()
+                        stagnation_count = 0  # Reset stagnation counter
             
-            if iteration % 10 == 0:
-                print(f"Iteration {iteration}: Best fitness = {global_best_fitness:.2f}")
+            # Track fitness improvement
+            fitness_history.append(global_best_fitness)
+            fitness_improvement = previous_best_fitness - global_best_fitness
+            
+            # Check for stagnation
+            if fitness_improvement < self.convergence_threshold:
+                stagnation_count += 1
+            else:
+                stagnation_count = 0
+                
+            previous_best_fitness = global_best_fitness
+            
+            # Enhanced progress reporting
+            if iteration % 10 == 0 or iteration < 10:
+                sa_delegated = sum([1 for i, decision in enumerate(global_best_position) 
+                                  if decision == 1 and self.delegatable_layers[i]])
+                improvement_vs_baseline = ((cpu_baseline_fitness - global_best_fitness) / cpu_baseline_fitness) * 100
+                print(f"Iteration {iteration:3d}: Fitness = {global_best_fitness:12.2f}, "
+                      f"Improvement = {improvement_vs_baseline:5.1f}%, "
+                      f"SA layers = {sa_delegated:2d}, "
+                      f"Inertia = {w:.3f}")
+            
+            # Advanced termination conditions
+            if iteration >= self.min_iterations:
+                # Early termination if target reached
+                if global_best_fitness <= self.target_fitness:
+                    print(f"Target fitness reached at iteration {iteration}!")
+                    break
+                    
+                # Early termination if stagnated
+                if stagnation_count >= self.stagnation_limit:
+                    print(f"Optimization stagnated for {self.stagnation_limit} iterations at iteration {iteration}")
+                    break
+                    
+                # Convergence check (very small improvements over recent iterations)
+                if len(fitness_history) >= 20:
+                    recent_improvement = fitness_history[-20] - fitness_history[-1]
+                    if recent_improvement < self.convergence_threshold * 20:
+                        print(f"Converged at iteration {iteration} (improvement: {recent_improvement:.6f})")
+                        break
+        
+        final_improvement = ((cpu_baseline_fitness - global_best_fitness) / cpu_baseline_fitness) * 100
+        sa_delegated_final = sum([1 for i, decision in enumerate(global_best_position) 
+                                if decision == 1 and self.delegatable_layers[i]])
         
         print(f"Final best fitness: {global_best_fitness:.2f}")
+        print(f"Energy savings vs CPU-only: {final_improvement:.1f}%")
+        print(f"Final SA delegated layers: {sa_delegated_final}")
+        
         return global_best_position, global_best_fitness
     
     def generate_partition_config(self, binary_partition: np.ndarray, output_csv: str):
@@ -219,13 +342,23 @@ class BPSOPartitionOptimizer:
         print(f"CPU layers: {total_cpu}")
         print(f"Partition saved to: {output_csv}")
         
-        # Show first 10 layer assignments
+        # Show first 10 layer assignments with more details
         print(f"\nFirst 10 layer assignments:")
         for i in range(min(10, len(partition_data))):
             item = partition_data[i]
             unit = "SA_ACCELERATOR" if item['partition_decision'] == 1 else "CPU"
             delegatable_str = "(delegatable)" if self.delegatable_layers[i] else "(CPU-only)"
-            print(f"  Layer {i} ({item['layer_type']}) -> {unit} {delegatable_str}")
+            
+            # Get additional info from profiling data
+            if i < len(self.profiling_data):
+                row = self.profiling_data.iloc[i]
+                energy_cost = row.get('energy_cost', 0)
+                total_gmacs = row.get('total_gmacs', 0)
+                complexity_str = f"energy={energy_cost//1000}k, gmacs={total_gmacs}"
+            else:
+                complexity_str = "no_data"
+            
+            print(f"  Layer {i:2d} ({item['layer_type']:15s}) -> {unit:13s} {delegatable_str:13s} [{complexity_str}]")
         
         if len(partition_data) > 10:
             print(f"  ... and {len(partition_data) - 10} more layers")
